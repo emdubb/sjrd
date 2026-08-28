@@ -1,5 +1,2 @@
-export type User = {
-  id: string;
-  full_name: string;
-  email: string;
-};
+export type { Database, Json } from './database.types';
+export type { Tables, TablesInsert, TablesUpdate, Enums } from './database.types';

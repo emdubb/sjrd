@@ -1,0 +1,1870 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SJRD Member App — Hi-Fi v6</title>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@mui/material@5/umd/material-ui.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+
+  <style>
+    :root {
+      --shell-bg: #F8FAFC; --shell-surface: #FFFFFF; --shell-text: #0F172A;
+      --shell-muted: #64748B; --shell-border: #E2E8F0;
+      --shell-accent: #2563EB; --shell-accent-soft: #DBEAFE;
+      --shell-shadow: 0 4px 12px rgba(15,23,42,.08);
+      --shell-shadow-lg: 0 24px 48px rgba(15,23,42,.16);
+      --shell-radius: 12px;
+      --shell-mobile-max: 402px; --shell-tablet-max: 820px; --shell-container-max: 1280px;
+      --shell-font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body { background: var(--shell-bg); }
+    .hifi-header { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; background: var(--shell-surface); border-bottom: 1px solid var(--shell-border); font-family: var(--shell-font); }
+    .hifi-header-title { font-weight: 700; font-size: 18px; color: var(--shell-text); }
+    .hifi-header-title small { font-weight: 400; color: var(--shell-muted); margin-left: 8px; font-size: 14px; }
+    .hifi-header-meta { font-size: 12px; color: var(--shell-muted); }
+    #screenNav { display: flex; gap: 0; background: var(--shell-surface); border-bottom: 1px solid var(--shell-border); padding: 0 24px; overflow-x: auto; position: sticky; top: 49px; z-index: 29; font-family: var(--shell-font); }
+    .hifi-tab { padding: 12px 20px; background: none; border: none; cursor: pointer; font: inherit; font-size: 14px; font-weight: 500; color: var(--shell-muted); border-bottom: 2px solid transparent; transition: color 120ms, border-color 120ms; white-space: nowrap; }
+    .hifi-tab:hover { color: var(--shell-text); }
+    .hifi-tab.active { color: var(--shell-accent); border-bottom-color: var(--shell-accent); }
+
+    .hifi-main { padding: 32px 24px 64px; background: var(--shell-bg); min-height: 100vh; }
+    .hifi-screen { display: none; }
+    .hifi-screen.active { display: block; }
+
+    .hifi-screen-frame { margin: 0 auto; background: var(--shell-surface); min-height: 600px; max-width: var(--shell-container-max); box-shadow: var(--shell-shadow); border-radius: var(--shell-radius); overflow: hidden; padding: 32px; }
+    .hifi-screen[data-device="mobile"] .hifi-screen-frame,
+    .hifi-screen[data-device="mobile-web"] .hifi-screen-frame { max-width: var(--shell-mobile-max); }
+    .hifi-screen[data-device="tablet"] .hifi-screen-frame { max-width: var(--shell-tablet-max); }
+
+    .hifi-mobile-frame { --safe-area-top: 50px; --safe-area-bottom: 34px; max-width: var(--shell-mobile-max); margin: 0 auto; background: #0a0a0a; padding: 12px 10px; border-radius: 55px; box-shadow: var(--shell-shadow-lg); position: relative; }
+    .hifi-mobile-frame::before { content:''; position:absolute; top:11px; left:50%; transform:translateX(-50%); width:125px; height:37px; background:#000; border-radius:22px; z-index:5; }
+    .hifi-mobile-frame::after  { content:''; position:absolute; bottom:8px; left:50%; transform:translateX(-50%); width:134px; height:5px; background:#FFFFFF; border-radius:2.5px; opacity:0.65; z-index:5; }
+    .hifi-mobile-frame .hifi-screen-frame { width:382px; height:850px; min-height:850px; max-width:382px; border-radius:43px; box-shadow:none; padding:0; overflow-y:auto; overflow-x:hidden; }
+    .hifi-mobile-frame .hifi-screen-frame > *:first-child { min-height:100%; box-sizing:border-box; padding-top:var(--safe-area-top,50px); padding-bottom:var(--safe-area-bottom,34px); }
+    .hifi-mobile-frame--web { display:flex; flex-direction:column; height:874px; }
+    .hifi-mobile-frame--web .hifi-screen-frame { flex:1 1 auto; width:382px; max-width:382px; height:auto; min-height:0; border-radius:0; overflow-y:auto; overflow-x:hidden; }
+    .hifi-mobile-frame--web .hifi-screen-frame > *:first-child { padding-top:0; padding-bottom:0; }
+    .hifi-ios-status-bar { display:flex; align-items:center; justify-content:space-between; padding:14px 20px 8px; background:rgba(255,255,255,0.97); backdrop-filter:saturate(180%) blur(20px); -webkit-backdrop-filter:saturate(180%) blur(20px); border-radius:43px 43px 0 0; border-bottom:0.5px solid rgba(0,0,0,0.06); position:relative; z-index:4; }
+    .hifi-ios-status-bar__time { font-size:15px; font-weight:600; color:#1c1c1e; letter-spacing:-0.3px; font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+    .hifi-ios-status-bar__icons { display:flex; align-items:center; gap:5px; }
+    .hifi-ios-status-bar__icons svg { display:block; }
+    .hifi-mobile-web-bottom-bar { display:flex; align-items:center; padding:8px 8px 14px; background:rgba(248,248,250,0.97); backdrop-filter:saturate(180%) blur(20px); -webkit-backdrop-filter:saturate(180%) blur(20px); border-top:0.5px solid rgba(0,0,0,0.10); border-radius:0 0 43px 43px; position:relative; z-index:4; }
+    .hifi-mobile-web-bottom-bar__nav { display:flex; flex-shrink:0; }
+    .hifi-mobile-web-bottom-bar__nav svg { width:22px; height:22px; padding:4px; display:block; }
+    .hifi-mobile-web-bottom-bar__url { flex:1; background:rgba(118,118,128,0.12); border-radius:10px; padding:7px 10px; display:flex; align-items:center; gap:4px; justify-content:center; margin:0 4px; overflow:hidden; }
+    .hifi-mobile-web-bottom-bar__url-lock { font-size:11px; color:#3c3c43; opacity:0.55; flex-shrink:0; }
+    .hifi-mobile-web-bottom-bar__url-text { font-size:13px; color:#1c1c1e; font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .hifi-mobile-web-bottom-bar__actions { display:flex; flex-shrink:0; }
+    .hifi-mobile-web-bottom-bar__actions svg { width:22px; height:22px; padding:4px; display:block; }
+
+    #flowBar { position: fixed; bottom: 0; left: 0; right: 0; background: #0F172A; color: #FFFFFF; padding: 8px 24px; font-size: 14px; z-index: 20; opacity: 0.9; font-family: var(--shell-font); }
+    #flowBar strong { color: var(--shell-accent-soft); margin-right: 8px; }
+  </style>
+</head>
+<body>
+
+<!-- iteration 2 (visual-polish pass, no wireframe changes — same 23 screens/data-cids as v1):
+  - [general] Added avatar identity (initials, primary-light bg) to every person-row: admin users list,
+    profile skater rows, guardian-dashboard attendance rows, attendance-entry skater rows.
+  - [general] Added a branded identity header (org avatar + eyebrow) atop home-coach and guardian-dashboard —
+    the wireframe started directly on content with no app identity.
+  - [visual] Cards now carry a soft elevation shadow in addition to the border, per DESIGN.md's
+    "subtle borders and soft shadows" elevation guidance (previously border-only, which read flat).
+  - [visual] Chips now carry semantic color (event type, drill type, user role, attendance-%) using the
+    chip status-success/warning/error/info/neutral variants already defined in DESIGN.md, instead of a
+    single flat outlined/default treatment for everything.
+  - [visual] Event tiles gained a colored left accent bar keyed to event type for faster scanning.
+  - [visual] Sign-up welcome banners changed from a plain info Alert to a navy hero card with an avatar,
+    matching the brand's authoritative navy identity instead of a generic banner.
+  - [state] Bottom nav "More" item now carries an unread-count badge (tab-bar + badge tokens) on
+    coach/guardian authenticated screens, reflecting the Notifications screen's unread items.
+-->
+
+<!-- iteration 3 (spacing/hierarchy pass, resolves designer review comments — same 23 screens/data-cids):
+  - [general] DESIGN.md tab-bar token updated: bottom nav is now primary-main navy with secondary-yellow
+    selected state (was background-paper/primary-main) — a deliberate design-system change, not a
+    one-off hi-fi override, since it changes brand presence app-wide. tokens.mui.theme.ts regenerated.
+  - [spacing] Increased the content-region gap (16px→24px) and list-row/event-tile internal spacing
+    across all 23 screens — the 16px rhythm read as wireframe-tight next to the card/chip treatment.
+  - [visual] Introduced a colored icon-badge SectionHeader for recurring section labels (Upcoming Events,
+    Attendance, Drills, Skater(s), Topics) instead of plain h6 text, for clearer visual hierarchy.
+  - [state] Screens that only had outline/text buttons now carry a single clear primary action per
+    DESIGN.md's "no more than one primary button per screen" rule: edit-practice's Add Drill is now
+    the primary (contained) action; drills-bank's add control is now a filled circular primary button;
+    profile's Edit/LOA row actions upgraded from bare text buttons to small outlined buttons.
+  - [general] New Event screen rebuilt: added the Save primary action that was missing from v1/v2, replaced
+    the free-text Type field with a colored segmented control (reusing the event-type accent colors),
+    replaced Recurrence with a real Select, and replaced Team(s) free text with toggleable team chips.
+  - [general] Notifications screen rebuilt: each item is now a card with a type icon, unread items carry
+    a colored accent bar and bold text plus a relative timestamp, and "Read" is a clear icon action
+    instead of a bare text link. Unread section header shows a live count.
+-->
+
+<!-- iteration 4 (Sign Up — Guardian Invite rework — same 23 screens/data-cids):
+  - [state] Replaced the Yes/No question controls (signup-guardian-invite, -yes, -no) — a filled Button
+    read as a call-to-action when it's actually an exclusive selection that reveals fields, not a
+    submit/navigate action. Now a pill-shaped ToggleButtonGroup (MUI's semantic control for an exclusive
+    binary choice), visually distinct from the navy "Next" CTA below it: unanswered = neutral outline,
+    selected = a light primary tint rather than a solid filled button.
+-->
+
+<!-- iteration 5 (Sign Up — Guardian Invite: yes/no control, take 2 — same 23 screens/data-cids):
+  - [state] Replaced the v4 ToggleButtonGroup with a standard RadioGroup (Yes/No) — after discussion,
+    radio buttons are the more conventional, unambiguous pattern for "answer one of two options in a
+    form" (vs. a segmented toggle, which can still read as a mode switch). Reveal-on-select behavior
+    is a well-understood radio pattern.
+-->
+
+<!-- iteration 6 (accessibility audit pass, WCAG 2.2 AA — same 23 screens/data-cids). Contrast ratios
+     computed against the actual rendered hex pairs, not eyeballed:
+  - [visual] BottomNav unselected icon/label was primary.light-on-primary.main = 1.37:1 (fails 4.5:1
+    text minimum) — changed to the neutral-light token = 8.78:1.
+  - [visual] Event-type-colored chips (EventTile, New Event's Type selector) hardcoded white text,
+    which on the secondary/yellow "Game" variant was 1.71:1 (fails) — now resolves text color per
+    accent (navy-on-yellow = 9.26:1, matching DESIGN.md's stated pairing), white on navy/info as before.
+  - [visual] Notifications' "Past" item icon circle was text.disabled-on-white-icon = 2.11:1 (fails the
+    3:1 non-text minimum) — changed the muted accent to text.secondary = 5.82:1.
+  - [spacing] Primary reading content (list-row primary text, event date/time, question text, hero
+    welcome copy, notification text, drill name/description, profile info values) upgraded from
+    body2/caption (14px/12px) to body1/body2 (16px/14px) — secondary labels, timestamps, and captions
+    (chip labels, field hints, "2h ago") intentionally stay smaller as true supporting metadata.
+  - [state] "Back" (5 screens) and view-event's "Edit · Cancel" were static Typography masquerading as
+    controls — not focusable, no accessible name/role. Converted to real text Buttons so they're
+    reachable by keyboard and announced correctly by screen readers.
+  - [state] AttendanceToggle's P/A/½ controls had role="button" + aria-label but no tabIndex, making
+    them unreachable by keyboard despite looking interactive. Added tabIndex={0}.
+-->
+
+<header class="hifi-header">
+  <div class="hifi-header-title">SJRD Member App <small>Hi-Fi · v6</small></div>
+  <div class="hifi-header-meta">23 screens · MUI · SJRD</div>
+</header>
+
+<nav id="screenNav"></nav>
+
+<main class="hifi-main"><div id="root"></div></main>
+
+<div id="flowBar"><strong>Flow:</strong><span id="flowText"></span></div>
+
+<script type="application/json" id="hifi-meta">
+{
+  "schema_version": "2.0",
+  "stage": "hifi",
+  "engine": "mui",
+  "project_name": "SJRD Member App",
+  "project_slug": "sjrd",
+  "library": "mui",
+  "iteration": 6,
+  "source_wireframe": "wireframe/sjrd-member-app-v5.html",
+  "generated_at": "2026-08-21T00:00:00Z",
+  "screens": [
+    { "id": "signup-coach", "name": "Sign Up — Coach", "device": "mobile", "flow_action": "Create", "flow_target": "home-coach",
+      "components": [
+        { "type": "alert", "cid": "signup-coach-welcome", "spec": "components/card.md", "variant": "default" },
+        { "type": "textfield", "cid": "signup-coach-password", "spec": "components/text-field.md", "variant": "outlined", "variants_in_use": ["outlined"], "states_wired": ["default","focus-visible","disabled","error"] },
+        { "type": "button", "cid": "signup-coach-create", "label": "Create", "variant": "contained", "spec": "components/button.md", "variants_in_use": ["primary"], "states_wired": ["default","hover","disabled"] }
+      ] },
+    { "id": "home-coach", "name": "Home — Coach", "device": "mobile", "flow_action": "bottom nav", "flow_target": null,
+      "components": [
+        { "type": "alert", "cid": "home-coach-notification", "spec": "components/card.md" },
+        { "type": "card", "cid": "home-coach-event-1", "spec": "components/card.md", "variants_in_use": ["default"] },
+        { "type": "chip", "cid": "home-coach-event-1", "spec": "components/chip.md", "variants_in_use": ["default"] },
+        { "type": "bottomnavigation", "cid": "home-coach-nav", "spec": "components/tab-bar.md", "variants_in_use": ["default"], "states_wired": ["default","selected"] }
+      ] },
+    { "id": "signup-guardian", "name": "Sign Up — Guardian", "device": "mobile", "flow_action": "Submit", "flow_target": "signup-guardian-invite",
+      "components": [
+        { "type": "alert", "cid": "signup-guardian-welcome", "spec": "components/card.md" },
+        { "type": "textfield", "cid": "signup-guardian-password", "spec": "components/text-field.md" },
+        { "type": "button", "cid": "signup-guardian-submit", "label": "Submit", "variant": "contained", "spec": "components/button.md" }
+      ] },
+    { "id": "signup-guardian-invite", "name": "Sign Up — Invite (unanswered)", "device": "mobile", "flow_action": "answer Yes", "flow_target": "signup-guardian-invite-yes",
+      "components": [
+        { "type": "button", "cid": "invite-add-guardian-q", "spec": "components/button.md", "variants_in_use": ["secondary"] },
+        { "type": "button", "cid": "invite-next", "label": "Next", "variant": "contained", "spec": "components/button.md", "states_wired": ["disabled"] }
+      ] },
+    { "id": "signup-guardian-invite-yes", "name": "Sign Up — Invite (Yes)", "device": "mobile", "flow_action": "Next", "flow_target": "guardian-dashboard",
+      "components": [
+        { "type": "textfield", "cid": "invite-add-guardian-q-yes", "spec": "components/text-field.md" },
+        { "type": "button", "cid": "invite-next-yes", "label": "Next", "variant": "contained", "spec": "components/button.md" }
+      ] },
+    { "id": "signup-guardian-invite-no", "name": "Sign Up — Invite (No)", "device": "mobile", "flow_action": "Next", "flow_target": "guardian-dashboard",
+      "components": [
+        { "type": "button", "cid": "invite-add-guardian-q-no", "spec": "components/button.md" },
+        { "type": "button", "cid": "invite-next-no", "label": "Next", "variant": "contained", "spec": "components/button.md" }
+      ] },
+    { "id": "guardian-dashboard", "name": "Guardian Dashboard", "device": "mobile", "flow_action": "bottom nav", "flow_target": null,
+      "components": [
+        { "type": "alert", "cid": "guardian-notification", "spec": "components/card.md" },
+        { "type": "list", "cid": "guardian-attendance-skater1", "spec": "components/list.md" },
+        { "type": "card", "cid": "guardian-event-1", "spec": "components/card.md" },
+        { "type": "bottomnavigation", "cid": "guardian-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "calendar-coach", "name": "Calendar — Coach", "device": "mobile", "flow_action": "tap event", "flow_target": "view-event",
+      "components": [
+        { "type": "iconbutton", "cid": "calendar-coach-add-event", "spec": "components/button.md" },
+        { "type": "card", "cid": "calendar-coach-event-1", "spec": "components/card.md" },
+        { "type": "bottomnavigation", "cid": "calendar-coach-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "calendar-guardian", "name": "Calendar — Guardian", "device": "mobile", "flow_action": "tap event", "flow_target": "view-event",
+      "components": [
+        { "type": "card", "cid": "calendar-guardian-event-1", "spec": "components/card.md" },
+        { "type": "bottomnavigation", "cid": "calendar-guardian-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "new-event", "name": "New Event", "device": "mobile", "flow_action": "save", "flow_target": "calendar-coach",
+      "components": [
+        { "type": "textfield", "cid": "new-event-title", "spec": "components/text-field.md" },
+        { "type": "bottomnavigation", "cid": "new-event-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "view-event", "name": "View Event", "device": "mobile", "flow_action": "close", "flow_target": "calendar-coach",
+      "components": [
+        { "type": "chip", "cid": "view-event", "spec": "components/chip.md" },
+        { "type": "bottomnavigation", "cid": "view-event-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "notifications", "name": "Notifications", "device": "mobile", "flow_action": "mark read", "flow_target": null,
+      "components": [
+        { "type": "list", "cid": "notif-unread-1", "spec": "components/list.md" },
+        { "type": "button", "cid": "notif-unread-1", "spec": "components/button.md" },
+        { "type": "bottomnavigation", "cid": "notifications-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "profile", "name": "Profile", "device": "mobile", "flow_action": "edit", "flow_target": null,
+      "components": [
+        { "type": "button", "cid": "profile-edit", "spec": "components/button.md" },
+        { "type": "list", "cid": "profile-skater1", "spec": "components/list.md" },
+        { "type": "bottomnavigation", "cid": "profile-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "coaching-home", "name": "Coaching", "device": "mobile", "flow_action": "tap Practice", "flow_target": "practice-schedule",
+      "components": [
+        { "type": "list", "cid": "coaching-practice-row", "spec": "components/list.md" },
+        { "type": "bottomnavigation", "cid": "coaching-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "practice-schedule", "name": "Practice — Schedule", "device": "mobile", "flow_action": "tap Plan", "flow_target": "edit-practice",
+      "components": [
+        { "type": "tabs", "cid": "practice-tabs", "spec": "components/tabs.md", "variants_in_use": ["default"], "states_wired": ["default","selected"] },
+        { "type": "card", "cid": "schedule-row-aug13", "spec": "components/card.md" },
+        { "type": "alert", "cid": "schedule-missing-coach", "spec": "components/card.md" },
+        { "type": "button", "cid": "schedule-row-aug13-plan", "spec": "components/button.md" },
+        { "type": "bottomnavigation", "cid": "practice-schedule-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "edit-practice", "name": "Edit Practice", "device": "mobile", "flow_action": "+ Add Drill", "flow_target": "add-drill-to-practice",
+      "components": [
+        { "type": "button", "cid": "edit-practice-assign-coach", "spec": "components/button.md" },
+        { "type": "listitem", "cid": "edit-practice-drill-1", "spec": "components/list.md" },
+        { "type": "button", "cid": "edit-practice-add-drill", "variant": "outlined", "spec": "components/button.md" },
+        { "type": "bottomnavigation", "cid": "edit-practice-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "add-drill-to-practice", "name": "Add Drill to Practice", "device": "mobile", "flow_action": "Add Drill to Practice", "flow_target": "edit-practice",
+      "components": [
+        { "type": "textfield", "cid": "add-drill-category-footwork", "spec": "components/text-field.md" },
+        { "type": "card", "cid": "add-drill-category-footwork", "spec": "components/card.md" },
+        { "type": "checkbox", "cid": "add-drill-category-footwork", "spec": "components/card.md" },
+        { "type": "chip", "cid": "add-drill-category-footwork", "spec": "components/chip.md" },
+        { "type": "button", "cid": "add-drill-submit", "variant": "contained", "spec": "components/button.md" },
+        { "type": "bottomnavigation", "cid": "add-drill-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "practice-attendance-list", "name": "Practice — Attendance (pick practice)", "device": "mobile", "flow_action": "tap practice", "flow_target": "attendance-entry",
+      "components": [
+        { "type": "tabs", "cid": "practice-tabs", "spec": "components/tabs.md" },
+        { "type": "list", "cid": "attendance-pick-aug13", "spec": "components/list.md" },
+        { "type": "bottomnavigation", "cid": "practice-attendance-list-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "attendance-entry", "name": "Attendance Entry", "device": "mobile", "flow_action": "Submit", "flow_target": null,
+      "components": [
+        { "type": "tabs", "cid": "practice-tabs", "spec": "components/tabs.md" },
+        { "type": "list", "cid": "attendance-skater-1", "spec": "components/list.md" },
+        { "type": "textfield", "cid": "attendance-notes", "spec": "components/text-field.md" },
+        { "type": "button", "cid": "attendance-submit", "variant": "contained", "spec": "components/button.md" },
+        { "type": "bottomnavigation", "cid": "attendance-entry-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "drills-bank", "name": "Practice — Drills (bank)", "device": "mobile", "flow_action": "tap drill", "flow_target": "drill-detail",
+      "components": [
+        { "type": "tabs", "cid": "drills-bank-tabs", "spec": "components/tabs.md" },
+        { "type": "list", "cid": "drills-bank-1", "spec": "components/list.md" },
+        { "type": "chip", "cid": "drills-bank-1", "spec": "components/chip.md" },
+        { "type": "iconbutton", "cid": "drills-bank-add", "spec": "components/button.md" },
+        { "type": "bottomnavigation", "cid": "drills-bank-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "drill-detail", "name": "Drill Detail", "device": "mobile", "flow_action": "back", "flow_target": "drills-bank",
+      "components": [
+        { "type": "chip", "cid": "drill-detail-type", "spec": "components/chip.md" },
+        { "type": "placeholder", "cid": "drill-detail-images", "role": "image-grid" },
+        { "type": "bottomnavigation", "cid": "drill-detail-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "admin-users", "name": "Admin — Users", "device": "mobile", "flow_action": "+ Invite User", "flow_target": "admin-invite-user",
+      "components": [
+        { "type": "button", "cid": "admin-users-invite", "variant": "contained", "spec": "components/button.md" },
+        { "type": "list", "cid": "admin-user-1", "spec": "components/list.md" },
+        { "type": "chip", "cid": "admin-user-1", "spec": "components/chip.md" },
+        { "type": "bottomnavigation", "cid": "admin-users-nav", "spec": "components/tab-bar.md" }
+      ] },
+    { "id": "admin-invite-user", "name": "Admin — Invite User", "device": "mobile", "flow_action": "Invite", "flow_target": "admin-users",
+      "components": [
+        { "type": "textfield", "cid": "admin-invite-team", "spec": "components/text-field.md" },
+        { "type": "button", "cid": "admin-invite-submit", "variant": "contained", "spec": "components/button.md" },
+        { "type": "bottomnavigation", "cid": "admin-invite-nav", "spec": "components/tab-bar.md" }
+      ] }
+  ],
+  "review_status": { "total_comments": 0, "pending": 0, "resolved": 0 }
+}
+</script>
+
+<script type="text/babel" data-presets="react">
+  const { createTheme, ThemeProvider, CssBaseline,
+    Button, TextField, Card, CardContent,
+    Typography, Box, Stack, IconButton,
+    Checkbox, Alert, Chip, Divider, Tabs, Tab,
+    BottomNavigation, BottomNavigationAction, Avatar, Badge,
+    Select, MenuItem, FormControl, InputLabel, RadioGroup, FormControlLabel, Radio
+  } = MaterialUI;
+
+  const theme = createTheme({
+    palette: {
+      mode: 'light',
+      primary:   { main: '#0B233F', light: '#1F3A5B', dark: '#071627', contrastText: '#FFFFFF' },
+      secondary: { main: '#F2BF35', light: '#F6D06B', dark: '#C99A1F', contrastText: '#0B233F' },
+      error:     { main: '#C62828', contrastText: '#FFFFFF' },
+      warning:   { main: '#ED6C02', contrastText: '#0B233F' },
+      info:      { main: '#2F6FA8', contrastText: '#FFFFFF' },
+      success:   { main: '#2E7D32', contrastText: '#FFFFFF' },
+      background: { default: '#FFFFFF', paper: '#F7F9FB' },
+      text:      { primary: '#0B233F', secondary: '#55677A', disabled: '#A9B4BF' },
+      divider:   '#B9C2CC',
+    },
+    typography: {
+      fontFamily: 'Lato, system-ui, -apple-system, sans-serif',
+      h1: { fontSize: '2.5rem', fontWeight: 700, lineHeight: 1.2, letterSpacing: '0.02em' },
+      h2: { fontSize: '2rem', fontWeight: 700, lineHeight: 1.2, letterSpacing: '0.02em' },
+      h3: { fontSize: '1.75rem', fontWeight: 700, lineHeight: 1.25, letterSpacing: '0.01em' },
+      h4: { fontSize: '1.5rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '0.01em' },
+      h5: { fontSize: '1.25rem', fontWeight: 700, lineHeight: 1.3 },
+      h6: { fontSize: '1.125rem', fontWeight: 700, lineHeight: 1.35 },
+      subtitle1: { fontSize: '1rem', fontWeight: 600, lineHeight: 1.4 },
+      subtitle2: { fontSize: '0.875rem', fontWeight: 600, lineHeight: 1.4 },
+      body1: { fontSize: '1rem', fontWeight: 400, lineHeight: 1.5 },
+      body2: { fontSize: '0.875rem', fontWeight: 400, lineHeight: 1.5 },
+      button: { textTransform: 'none', fontWeight: 700, letterSpacing: '0.03em' },
+      caption: { fontSize: '0.75rem', fontWeight: 400, lineHeight: 1.4 },
+    },
+    shape: { borderRadius: 8 },
+    spacing: 8,
+    shadows: [
+      'none',
+      '0 1px 2px rgba(11,35,63,0.06)',
+      '0 1px 3px rgba(11,35,63,0.08),0 1px 2px rgba(11,35,63,0.06)',
+      ...Array(22).fill('0 2px 6px rgba(11,35,63,0.10),0 1px 3px rgba(11,35,63,0.06)'),
+    ],
+    components: {
+      MuiButton: {
+        defaultProps: { disableElevation: true },
+        styleOverrides: { root: { textTransform: 'none', minHeight: 44, borderRadius: 8, paddingLeft: 20, paddingRight: 20 } },
+      },
+      MuiInputBase: { styleOverrides: { root: { minHeight: 44 } } },
+      MuiTextField: { defaultProps: { variant: 'outlined' } },
+      MuiCard: { styleOverrides: { root: { borderRadius: 8, border: '1px solid #B9C2CC', backgroundColor: '#F7F9FB', boxShadow: '0 1px 3px rgba(11,35,63,0.08),0 1px 2px rgba(11,35,63,0.06)' } } },
+      MuiAvatar: { styleOverrides: { root: { backgroundColor: '#1F3A5B', color: '#FFFFFF', fontWeight: 700, fontSize: '0.875rem' } } },
+      MuiBadge: { styleOverrides: { badge: { backgroundColor: '#C62828', color: '#FFFFFF' } } },
+      MuiChip: { styleOverrides: { root: { borderRadius: 9999 } } },
+      MuiBottomNavigation: { styleOverrides: { root: { backgroundColor: '#0B233F', height: 60 } } },
+      MuiAppBar: { styleOverrides: { root: { backgroundColor: '#0B233F', color: '#FFFFFF', boxShadow: 'none' } } },
+    },
+  });
+
+  /* ── Inline SVG icon helpers — @mui/icons-material is NOT in the UMD bundle ── */
+  const IconBack        = (p) => (<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>);
+  const IconClose       = (p) => (<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>);
+  const IconEdit         = (p) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>);
+  const IconChevronRight = (p) => (<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>);
+  const IconChevronLeft  = (p) => (<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>);
+  const IconHome         = (p) => (<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>);
+  const IconCalendar     = (p) => (<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>);
+  const IconSports       = (p) => (<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 13.9V17H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-3.96C19.08 9.63 21 7.55 21 5V4c0-.55-.45-1-1-1zM7 8.82C5.84 8.4 5 7.3 5 6V5h2v3.82zM19 6c0 1.3-.84 2.4-2 2.82V5h2v1z"/></svg>);
+  const IconMore         = (p) => (<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>);
+  const IconNotifications = (p) => (<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>);
+  const IconAdd          = (p) => (<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>);
+  const IconArrowUp      = (p) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>);
+  const IconArrowDown    = (p) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>);
+  const IconDelete       = (p) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>);
+  const IconFilterAlt    = (p) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M4.25 5.61C6.27 8.2 10 13 10 13v6c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-6s3.72-4.8 5.74-7.39c.51-.66.04-1.61-.79-1.61H5.04c-.83 0-1.3.95-.79 1.61z"/></svg>);
+  const IconAutorenew    = (p) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 016 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/></svg>);
+  const IconPersonAdd    = (p) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>);
+  const IconImage        = (p) => (<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>);
+  const IconError        = (p) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>);
+  const IconChecklist    = (p) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M3 5h2v2H3V5zm4 0h14v2H7V5zM3 11h2v2H3v-2zm4 0h14v2H7v-2zM3 17h2v2H3v-2zm4 0h14v2H7v-2z"/></svg>);
+  const IconCheck        = (p) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>);
+  const IconPeople       = (p) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>);
+  const IconTopic        = (p) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>);
+
+  /* ── Shared app-shell + composition helpers ────────────────────────────── */
+  function IosStatusBar() {
+    return (
+      <div className="hifi-ios-status-bar">
+        <span className="hifi-ios-status-bar__time">9:41</span>
+        <div className="hifi-ios-status-bar__icons">
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="#1c1c1e">
+            <rect x="0" y="6" width="3" height="6" rx="0.5"/>
+            <rect x="4.5" y="4" width="3" height="8" rx="0.5"/>
+            <rect x="9" y="2" width="3" height="10" rx="0.5"/>
+            <rect x="13.5" y="0" width="3" height="12" rx="0.5" opacity="0.3"/>
+          </svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#1c1c1e">
+            <rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#1c1c1e" strokeWidth="1" fill="none" opacity="0.35"/>
+            <rect x="2" y="2" width="16" height="8" rx="2"/>
+          </svg>
+        </div>
+      </div>
+    );
+  }
+
+  function SafariBottomBar({ url, dataCid }) {
+    const domain = url.replace(/^https?:\/\//, '').split('/')[0];
+    return (
+      <div className="hifi-mobile-web-bottom-bar" data-cid={dataCid}>
+        <div className="hifi-mobile-web-bottom-bar__nav">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007aff" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+        <div className="hifi-mobile-web-bottom-bar__url">
+          <span className="hifi-mobile-web-bottom-bar__url-lock">🔒</span>
+          <span className="hifi-mobile-web-bottom-bar__url-text">{domain}</span>
+        </div>
+        <div className="hifi-mobile-web-bottom-bar__actions">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007aff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+          </svg>
+        </div>
+      </div>
+    );
+  }
+
+  function SectionHeader({ icon: Icon, label, cid }) {
+    return (
+      <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }} data-cid={cid}>
+        <Box sx={{ width: 24, height: 24, borderRadius: '50%', bgcolor: 'primary.main', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Icon style={{ width: 14, height: 14 }} />
+        </Box>
+        <Typography variant="h6" sx={{ fontWeight: 700 }}>{label}</Typography>
+      </Stack>
+    );
+  }
+
+  function NotificationCard({ cid, icon: Icon, accent, text, time, unread }) {
+    return (
+      <Card data-cid={cid} sx={{ overflow: 'hidden' }}>
+        <Box sx={{ display: 'flex' }}>
+          {unread && <Box sx={{ width: 4, bgcolor: accent, flexShrink: 0 }} />}
+          <CardContent sx={{ flex: 1, display: 'flex', alignItems: 'flex-start', gap: 1.5, p: 2, '&:last-child': { pb: 2 } }}>
+            <Box sx={{ width: 36, height: 36, borderRadius: '50%', bgcolor: accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Icon style={{ width: 18, height: 18 }} />
+            </Box>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="body1" sx={{ fontWeight: unread ? 700 : 400 }}>{text}</Typography>
+              <Typography variant="caption" color="text.secondary">{time}</Typography>
+            </Box>
+            {unread && <IconButton size="small" aria-label="Mark as read"><IconCheck /></IconButton>}
+          </CardContent>
+        </Box>
+      </Card>
+    );
+  }
+
+  function BottomNav({ variant = 'coach', active, cid, badgeCounts = {} }) {
+    const items = variant === 'coach'
+      ? [['home', 'Home', IconHome], ['calendar', 'Calendar', IconCalendar], ['coaching', 'Coaching', IconSports], ['more', 'More', IconMore]]
+      : [['home', 'Home', IconHome], ['calendar', 'Calendar', IconCalendar], ['more', 'More', IconMore]];
+    return (
+      <BottomNavigation value={active} showLabels data-cid={cid} sx={{ borderTop: '1px solid', borderColor: 'primary.dark' }}>
+        {items.map(([key, label, Icon]) => {
+          const count = badgeCounts[key];
+          const icon = count ? <Badge badgeContent={count} data-cid={cid + '-badge-' + key}><Icon /></Badge> : <Icon />;
+          return (
+            <BottomNavigationAction key={key} value={key} label={label} icon={icon}
+              sx={{ minWidth: 0, color: active === key ? 'secondary.main' : '#B9C2CC', '&.Mui-selected': { color: 'secondary.main' } }} />
+          );
+        })}
+      </BottomNavigation>
+    );
+  }
+
+  const EVENT_TYPE_ACCENT = { Practice: 'primary.main', Game: 'secondary.main', Scrimmage: 'info.main' };
+  const ACCENT_CONTRAST_TEXT = { 'primary.main': '#FFFFFF', 'secondary.main': '#0B233F', 'info.main': '#FFFFFF' };
+
+  function TypeSelector({ value, cid }) {
+    const options = ['Practice', 'Game', 'Scrimmage'];
+    return (
+      <Box data-cid={cid}>
+        <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.75 }}>Type</Typography>
+        <Stack direction="row" spacing={1}>
+          {options.map((o) => {
+            const accent = EVENT_TYPE_ACCENT[o];
+            const selected = o === value;
+            return (
+              <Chip key={o} label={o} sx={{
+                fontWeight: 700,
+                bgcolor: selected ? accent : 'transparent',
+                color: selected ? ACCENT_CONTRAST_TEXT[accent] : 'text.secondary',
+                border: '1px solid', borderColor: selected ? accent : 'divider',
+              }} />
+            );
+          })}
+        </Stack>
+      </Box>
+    );
+  }
+
+  function TeamSelector({ teams, selected, cid }) {
+    return (
+      <Box data-cid={cid}>
+        <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.75 }}>Team(s)</Typography>
+        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          {teams.map((t) => {
+            const isSel = selected.includes(t);
+            return (
+              <Chip key={t} label={t} sx={{
+                fontWeight: 700,
+                bgcolor: isSel ? 'primary.main' : 'transparent',
+                color: isSel ? '#fff' : 'text.secondary',
+                border: '1px solid', borderColor: isSel ? 'primary.main' : 'divider',
+              }} />
+            );
+          })}
+        </Stack>
+      </Box>
+    );
+  }
+
+  function InitialsAvatar({ name, size = 32 }) {
+    const initials = name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
+    return <Avatar sx={{ width: size, height: size, fontSize: size * 0.4 }}>{initials}</Avatar>;
+  }
+
+  function HeroWelcome({ cid, name, initials, body }) {
+    return (
+      <Card data-cid={cid} sx={{ bgcolor: 'primary.main', border: 'none', color: 'primary.contrastText' }}>
+        <CardContent sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+          <Avatar sx={{ bgcolor: 'secondary.main', color: 'secondary.contrastText', fontWeight: 700 }}>{initials}</Avatar>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'inherit' }}>Welcome, {name}!</Typography>
+            <Typography variant="body1" sx={{ color: 'inherit', mt: 0.5 }}>{body}</Typography>
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  function BrandHeader({ eyebrow, title }) {
+    return (
+      <Stack direction="row" spacing={1.5} alignItems="center" sx={{ pb: 0.5 }}>
+        <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main', fontWeight: 700, fontSize: '0.8rem' }}>SJ</Avatar>
+        <Box>
+          <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, display: 'block', lineHeight: 1.2 }}>{eyebrow}</Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>{title}</Typography>
+        </Box>
+      </Stack>
+    );
+  }
+
+  function EventTile({ cid, chip, subChip, date, time, extra }) {
+    const accent = EVENT_TYPE_ACCENT[chip] || 'primary.main';
+    return (
+      <Card data-cid={cid} sx={{ overflow: 'hidden' }}>
+        <Box sx={{ display: 'flex' }}>
+          <Box sx={{ width: 4, bgcolor: accent, flexShrink: 0 }} />
+          <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.75, p: 2, '&:last-child': { pb: 2 } }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Chip label={chip} size="small" sx={{ bgcolor: accent, color: ACCENT_CONTRAST_TEXT[accent] || '#FFFFFF', fontWeight: 700 }} />
+              {subChip && <Chip label={subChip} size="small" variant="outlined" />}
+            </Stack>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{date}</Typography>
+            <Typography variant="body1" color="text.secondary">{time}</Typography>
+            {extra}
+          </CardContent>
+        </Box>
+      </Card>
+    );
+  }
+
+  function InfoRow({ cid, label, value }) {
+    return (
+      <Stack direction="row" justifyContent="space-between" sx={{ py: 1, borderBottom: '1px solid', borderColor: 'divider' }} data-cid={cid}>
+        <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>{label}</Typography>
+        <Typography variant="body1">{value}</Typography>
+      </Stack>
+    );
+  }
+
+  function ListRow({ cid, primary, trailing, avatarName }) {
+    return (
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }} data-cid={cid}>
+        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+          {avatarName && <InitialsAvatar name={avatarName} />}
+          <Box sx={{ typography: 'body1' }}>{primary}</Box>
+        </Stack>
+        {trailing}
+      </Stack>
+    );
+  }
+
+  const ROLE_CHIP_STYLE = {
+    Coach: { color: 'info' },
+    Guardian: { sx: { bgcolor: '#B9C2CC', color: 'text.primary' } },
+    Skater: { color: 'success' },
+    Admin: { color: 'warning' },
+  };
+  function RoleChip({ role }) {
+    const style = ROLE_CHIP_STYLE[role] || {};
+    return <Chip label={role} size="small" {...style} />;
+  }
+
+  const ATTENDANCE_CHIP_STYLE = (pct) => (pct >= 90 ? { color: 'success' } : pct >= 80 ? { color: 'warning' } : { color: 'error' });
+  function AttendanceChip({ pct }) {
+    return <Chip label={pct + '%'} size="small" sx={{ fontWeight: 700 }} {...ATTENDANCE_CHIP_STYLE(pct)} />;
+  }
+
+  const DRILL_TYPE_CHIP_STYLE = {
+    Footwork: { color: 'info' },
+    Blocking: { color: 'warning' },
+    Jamming: { color: 'success' },
+  };
+  function DrillTypeChip({ type }) {
+    const style = DRILL_TYPE_CHIP_STYLE[type] || {};
+    return <Chip label={type} size="small" {...style} />;
+  }
+
+  function YesNoQuestion({ cid, question, answer, children }) {
+    const labelId = cid + '-label';
+    return (
+      <Stack spacing={0.5} data-cid={cid}>
+        <Typography variant="body1" id={labelId}>{question}</Typography>
+        <RadioGroup row aria-labelledby={labelId} value={answer || ''}>
+          <FormControlLabel value="yes" label="Yes" sx={{ mr: 4 }}
+            control={<Radio checked={answer === 'yes'} sx={{ color: 'divider', '&.Mui-checked': { color: 'primary.main' } }} />} />
+          <FormControlLabel value="no" label="No"
+            control={<Radio checked={answer === 'no'} sx={{ color: 'divider', '&.Mui-checked': { color: 'primary.main' } }} />} />
+        </RadioGroup>
+        {children}
+      </Stack>
+    );
+  }
+
+  function MiniCalendar({ cid, dotDays = [3, 10, 17, 24] }) {
+    const days = Array.from({ length: 28 }, (_, i) => i + 1);
+    return (
+      <Box data-cid={cid} sx={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '2px' }}>
+        {days.map((d) => (
+          <Box key={d} sx={{ position: 'relative', textAlign: 'center', py: 0.75, border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: 11 }}>
+            {d}
+            {dotDays.includes(d) && <Box sx={{ position: 'absolute', bottom: 2, left: '50%', transform: 'translateX(-50%)', width: 5, height: 5, borderRadius: '50%', bgcolor: 'text.secondary' }} />}
+          </Box>
+        ))}
+      </Box>
+    );
+  }
+
+  function PracticeTabs({ active, cid }) {
+    const tabs = ['Attendance', 'Drills', 'Schedule'];
+    return (
+      <Tabs value={active} data-cid={cid} sx={{ minHeight: 36 }} TabIndicatorProps={{ style: { backgroundColor: theme.palette.primary.main } }}>
+        {tabs.map((t) => (
+          <Tab key={t} value={t} label={t}
+            sx={{ minHeight: 36, fontWeight: 700, color: 'text.secondary', '&.Mui-selected': { color: 'primary.main' } }} />
+        ))}
+      </Tabs>
+    );
+  }
+
+  function DrillRow({ cid, name, up, down, del = true }) {
+    return (
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ py: 1, borderBottom: '1px solid', borderColor: 'divider' }} data-cid={cid}>
+        <Typography variant="body2">{name}</Typography>
+        <Stack direction="row" spacing={0.5}>
+          {up && <IconButton size="small" aria-label="Move up"><IconArrowUp /></IconButton>}
+          {down && <IconButton size="small" aria-label="Move down"><IconArrowDown /></IconButton>}
+          {del && <IconButton size="small" aria-label="Delete drill"><IconDelete /></IconButton>}
+        </Stack>
+      </Stack>
+    );
+  }
+
+  function DrillSelectCard({ cid, checked, name, type, description }) {
+    return (
+      <Card data-cid={cid} sx={{ display: 'flex', gap: 1.5, p: 1.5, alignItems: 'flex-start' }}>
+        <Checkbox defaultChecked={checked} inputProps={{ 'aria-label': name + ' — include in practice' }} sx={{ p: 0, mt: 0.5 }} />
+        <Stack spacing={0.5}>
+          <Typography variant="body1" sx={{ fontWeight: 700 }}>{name}</Typography>
+          <Box sx={{ alignSelf: 'flex-start' }}><DrillTypeChip type={type} /></Box>
+          <Typography variant="body2" color="text.secondary">{description}</Typography>
+        </Stack>
+      </Card>
+    );
+  }
+
+  function AttendanceToggle({ cid, value = 'P' }) {
+    const opts = ['P', 'A', '½'];
+    return (
+      <Stack direction="row" spacing={0.5} data-cid={cid}>
+        {opts.map((o) => (
+          <Box key={o} role="button" tabIndex={0} aria-label={'Mark ' + (o === 'P' ? 'present' : o === 'A' ? 'absent' : 'partial')} sx={{
+            width: 24, height: 24, borderRadius: '50%', border: '1.5px solid', borderColor: 'text.primary',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700,
+            bgcolor: value === o ? 'text.primary' : 'transparent', color: value === o ? 'background.default' : 'text.primary'
+          }}>{o}</Box>
+        ))}
+      </Stack>
+    );
+  }
+
+  /* ── Screens (data-cid preserved verbatim from wireframe/sjrd-member-app-v5.html) ── */
+  function Screens() {
+    return (
+      <React.Fragment>
+
+        <section className="hifi-screen active" data-screen="signup-coach" data-device="mobile-web" data-flow="Coach invited via magic link sets a password to finish creating their account">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }} data-cid="signup-coach-title">Create Account</Typography>
+            <HeroWelcome cid="signup-coach-welcome" name="Bull Doze-Her (Melissa Wilcox)" initials="BD"
+              body="Set a password to finish creating your coach account." />
+            <TextField label="Password" type="password" fullWidth />
+            <TextField label="Confirm password" type="password" fullWidth />
+            </Box>
+  <Box sx={{ p: 2, bgcolor: 'background.paper', borderTop: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', gap: 1.5 }}><Button variant="contained" size="large" fullWidth data-cid="signup-coach-create">Create</Button>  </Box>
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/signup-coach" dataCid="signup-coach-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="home-coach" data-device="mobile-web" data-flow="Coach lands on home after sign-up; bottom nav: Home, Calendar, Coaching, More">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <BrandHeader eyebrow="Sacramento Junior Roller Derby" title="Good to see you, Coach Bull" />
+            <Alert severity="info" icon={<IconNotifications />} data-cid="home-coach-notification">Practice moved to 5:30 PM this Thursday.</Alert>
+            <SectionHeader icon={IconCalendar} label="Upcoming Events" cid="home-coach-events-header" />
+            <EventTile cid="home-coach-event-1" chip="Practice" subChip="Team 1" date="Aug 13" time="5:00 – 7:00 PM" />
+            <EventTile cid="home-coach-event-2" chip="Game" subChip="Team 2" date="Aug 17" time="2:00 – 4:00 PM" />
+            <EventTile cid="home-coach-event-3" chip="Scrimmage" subChip="Team 1" date="Aug 20" time="6:00 – 7:30 PM" />
+            </Box>
+  <BottomNav variant="coach" active="home" cid="home-coach-nav" badgeCounts={{ more: 2 }} />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/home-coach" dataCid="home-coach-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="signup-guardian" data-device="mobile-web" data-flow="Guardian sets a password to finish creating their account">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }} data-cid="signup-guardian-title">Create Account</Typography>
+            <HeroWelcome cid="signup-guardian-welcome" name="Justin Emery" initials="JE"
+              body="This is where you'll find everything you need to help Violet (Danger Mouse) and Cora (Corgi) navigate Sacramento Junior Roller Derby — practice schedules, attendance, and team updates all in one place. You'll be able to add additional guardian or skater accounts in the next step." />
+            <TextField label="Password" type="password" fullWidth />
+            <TextField label="Confirm password" type="password" fullWidth />
+            </Box>
+  <Box sx={{ p: 2, bgcolor: 'background.paper', borderTop: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', gap: 1.5 }}><Button variant="contained" size="large" fullWidth data-cid="signup-guardian-submit">Submit</Button>  </Box>
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/signup-guardian" dataCid="signup-guardian-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="signup-guardian-invite" data-device="mobile-web" data-flow="State 1 of 3 — both questions unanswered, Next disabled">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <YesNoQuestion cid="invite-add-guardian-q" question="Would you like to add another guardian?" />
+            <YesNoQuestion cid="invite-create-skater-q" question="Create an account for Violet (Danger Mouse)?" />
+            <YesNoQuestion cid="invite-create-skater-q-cora" question="Create an account for Cora (Corgi)?" />
+            </Box>
+  <Box sx={{ p: 2, bgcolor: 'background.paper', borderTop: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', gap: 1.5 }}><Button variant="contained" size="large" fullWidth disabled data-cid="invite-next">Next</Button>  </Box>
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/signup-guardian-invite" dataCid="signup-guardian-invite-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="signup-guardian-invite-yes" data-device="mobile-web" data-flow="State 2 of 3 — both answered Yes, fields reveal inline, Next enabled">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <YesNoQuestion cid="invite-add-guardian-q-yes" question="Would you like to add another guardian?" answer="yes">
+              <TextField label="First name" fullWidth size="small" />
+              <TextField label="Last name" fullWidth size="small" />
+              <TextField label="Email" type="email" fullWidth size="small" />
+              <TextField label="Phone number" type="tel" fullWidth size="small" />
+            </YesNoQuestion>
+            <YesNoQuestion cid="invite-create-skater-q-yes" question="Create an account for Violet (Danger Mouse)?" answer="yes">
+              <TextField label="Email" type="email" fullWidth size="small" />
+              <TextField label="Phone number (optional)" type="tel" fullWidth size="small" />
+            </YesNoQuestion>
+            <YesNoQuestion cid="invite-create-skater-q-cora-yes" question="Create an account for Cora (Corgi)?" answer="yes">
+              <TextField label="Email" type="email" fullWidth size="small" />
+              <TextField label="Phone number (optional)" type="tel" fullWidth size="small" />
+            </YesNoQuestion>
+            </Box>
+  <Box sx={{ p: 2, bgcolor: 'background.paper', borderTop: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', gap: 1.5 }}><Button variant="contained" size="large" fullWidth data-cid="invite-next-yes">Next</Button>  </Box>
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/signup-guardian-invite-yes" dataCid="signup-guardian-invite-yes-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="signup-guardian-invite-no" data-device="mobile-web" data-flow="State 3 of 3 — both answered No, no extra fields, Next enabled">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <YesNoQuestion cid="invite-add-guardian-q-no" question="Would you like to add another guardian?" answer="no" />
+            <YesNoQuestion cid="invite-create-skater-q-no" question="Create an account for Violet (Danger Mouse)?" answer="no" />
+            <YesNoQuestion cid="invite-create-skater-q-cora-no" question="Create an account for Cora (Corgi)?" answer="no" />
+            </Box>
+  <Box sx={{ p: 2, bgcolor: 'background.paper', borderTop: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', gap: 1.5 }}><Button variant="contained" size="large" fullWidth data-cid="invite-next-no">Next</Button>  </Box>
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/signup-guardian-invite-no" dataCid="signup-guardian-invite-no-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="guardian-dashboard" data-device="mobile-web" data-flow="Guardian dashboard — Attendance first, then Upcoming Events; bottom nav has no Coaching tab">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <BrandHeader eyebrow="Sacramento Junior Roller Derby" title="Welcome back, Justin" />
+            <Alert severity="info" icon={<IconNotifications />} data-cid="guardian-notification">Practice moved to 5:30 PM this Thursday.</Alert>
+            <SectionHeader icon={IconChecklist} label="Attendance" />
+            <ListRow cid="guardian-attendance-skater1" avatarName="Danger Mouse" primary="Attendance — Danger Mouse" trailing={<AttendanceChip pct={90} />} />
+            <ListRow cid="guardian-attendance-skater2" avatarName="Corgi" primary="Attendance — Corgi" trailing={<AttendanceChip pct={85} />} />
+            <SectionHeader icon={IconCalendar} label="Upcoming Events" cid="guardian-events-header" />
+            <EventTile cid="guardian-event-1" chip="Practice" subChip="Danger Mouse" date="Aug 13" time="5:00 – 7:00 PM" />
+            <EventTile cid="guardian-event-2" chip="Game" subChip="Corgi" date="Aug 17" time="2:00 – 4:00 PM" />
+            </Box>
+  <BottomNav variant="guardian" active="home" cid="guardian-nav" badgeCounts={{ more: 2 }} />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/guardian-dashboard" dataCid="guardian-dashboard-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="calendar-coach" data-device="mobile-web" data-flow="Coach calendar — month grid + agenda tiles; + button creates a New Event">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" data-cid="calendar-coach-month-nav">
+              <IconButton size="small" aria-label="Previous month"><IconChevronLeft /></IconButton>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>August</Typography>
+              <IconButton size="small" aria-label="Next month"><IconChevronRight /></IconButton>
+            </Stack>
+            <MiniCalendar cid="calendar-coach-grid" />
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <SectionHeader icon={IconCalendar} label="Upcoming Events" />
+              <IconButton size="small" aria-label="Add event" data-cid="calendar-coach-add-event" sx={{ bgcolor: 'primary.main', color: '#fff', '&:hover': { bgcolor: 'primary.dark' } }}><IconAdd /></IconButton>
+            </Stack>
+            <EventTile cid="calendar-coach-event-1" chip="Practice" subChip="Team 1" date="Aug 13" time="5:00 – 7:00 PM" />
+            <EventTile cid="calendar-coach-event-2" chip="Scrimmage" subChip="Team 1, Team 2" date="Aug 17" time="2:00 – 4:00 PM" />
+            </Box>
+  <BottomNav variant="coach" active="calendar" cid="calendar-coach-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/calendar-coach" dataCid="calendar-coach-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="calendar-guardian" data-device="mobile-web" data-flow="Guardian calendar — same tiles, labeled by skater instead of team; no add button">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" data-cid="calendar-guardian-month-nav">
+              <IconButton size="small" aria-label="Previous month"><IconChevronLeft /></IconButton>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>August</Typography>
+              <IconButton size="small" aria-label="Next month"><IconChevronRight /></IconButton>
+            </Stack>
+            <MiniCalendar cid="calendar-guardian-grid" />
+            <SectionHeader icon={IconCalendar} label="Upcoming Events" />
+            <EventTile cid="calendar-guardian-event-1" chip="Practice" subChip="Danger Mouse" date="Aug 13" time="5:00 – 7:00 PM" />
+            <EventTile cid="calendar-guardian-event-2" chip="Game" subChip="Corgi" date="Aug 17" time="2:00 – 4:00 PM" />
+            </Box>
+  <BottomNav variant="guardian" active="calendar" cid="calendar-guardian-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/calendar-guardian" dataCid="calendar-guardian-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="new-event" data-device="mobile-web" data-flow="Coach/admin creates a new calendar event, reached from calendar-coach">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>New Event</Typography>
+              <IconButton size="small" aria-label="Close" data-cid="new-event-close"><IconClose /></IconButton>
+            </Stack>
+            <TextField label="Title" fullWidth placeholder="e.g. Team 1 Practice" data-cid="new-event-title" />
+            <TextField label="Date" fullWidth placeholder="Aug 24, 2026"
+              InputProps={{ startAdornment: <IconCalendar style={{ marginRight: 8, width: 18, height: 18, opacity: 0.6 }} /> }}
+              data-cid="new-event-date" />
+            <FormControl fullWidth>
+              <InputLabel id="new-event-recurrence-label">Recurrence</InputLabel>
+              <Select labelId="new-event-recurrence-label" label="Recurrence" defaultValue="none" data-cid="new-event-recurrence">
+                <MenuItem value="none">Does not repeat</MenuItem>
+                <MenuItem value="weekly">Weekly</MenuItem>
+                <MenuItem value="biweekly">Every 2 weeks</MenuItem>
+              </Select>
+            </FormControl>
+            <TypeSelector cid="new-event-type" value="Practice" />
+            <TeamSelector cid="new-event-teams" teams={['Team 1', 'Team 2']} selected={['Team 1']} />
+            </Box>
+  <Box sx={{ p: 2, pb: 1.5, bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Button variant="contained" fullWidth size="large" data-cid="new-event-save">Save</Button>
+  </Box>
+  <BottomNav variant="coach" active="calendar" cid="new-event-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/new-event" dataCid="new-event-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="view-event" data-device="mobile-web" data-flow="Coaching-only Edit/Cancel actions in the header; reachable from either calendar">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Box sx={{ width: 24 }} />
+              <Stack direction="row" spacing={0.5} alignItems="center" data-cid="view-event-edit-cancel" title="coaching only">
+                <Button variant="text" size="small" sx={{ minHeight: 'auto', p: 0.5, fontSize: '0.75rem' }}>Edit</Button>
+                <Typography variant="caption" color="text.secondary">·</Typography>
+                <Button variant="text" size="small" color="error" sx={{ minHeight: 'auto', p: 0.5, fontSize: '0.75rem' }}>Cancel</Button>
+              </Stack>
+              <IconButton size="small" aria-label="Close" data-cid="view-event-close"><IconClose /></IconButton>
+            </Stack>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>Practice</Typography>
+            <Typography variant="body1" color="text.secondary">Aug 13, 5–7</Typography>
+            <Stack direction="row" spacing={1}>
+              <Chip label="Team 1" size="small" variant="outlined" />
+              <Chip label="Team 2" size="small" variant="outlined" />
+            </Stack>
+            <Typography variant="caption" color="text.secondary">Coaches: x, x, x</Typography>
+            <SectionHeader icon={IconTopic} label="Topics" />
+            <Divider /><Divider />
+            </Box>
+  <BottomNav variant="coach" active="calendar" cid="view-event-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/view-event" dataCid="view-event-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="notifications" data-device="mobile-web" data-flow="Unread notifications can be marked Read; past notifications listed below">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>Notifications</Typography>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <SectionHeader icon={IconNotifications} label="Unread" />
+              <Chip label="2" size="small" color="error" sx={{ fontWeight: 700, height: 20 }} />
+            </Stack>
+            <NotificationCard cid="notif-unread-1" icon={IconNotifications} accent="warning.main" unread
+              text="Practice moved to 5:30" time="2h ago" />
+            <NotificationCard cid="notif-unread-2" icon={IconCalendar} accent="info.main" unread
+              text="New event: Scrimmage Aug 17" time="1d ago" />
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 0.5 }}>Past</Typography>
+            <NotificationCard cid="notif-past-1" icon={IconCheck} accent="success.main"
+              text="Registration confirmed" time="Aug 10" />
+            <NotificationCard cid="notif-past-2" icon={IconPeople} accent="text.secondary"
+              text="Welcome to SJRD!" time="Aug 3" />
+            </Box>
+  <BottomNav variant="coach" active="more" cid="notifications-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/notifications" dataCid="notifications-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="profile" data-device="mobile-web" data-flow="Profile shows real info; Edit/LOA render as link actions per skater">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>Profile</Typography>
+              <Button startIcon={<IconEdit />} data-cid="profile-edit">Edit</Button>
+            </Stack>
+            <InfoRow cid="profile-name" label="Name" value="Justin Emery" />
+            <InfoRow cid="profile-email" label="Email" value="justin@email.com" />
+            <InfoRow cid="profile-phone" label="Phone" value="(916) 555-0142" />
+            <SectionHeader icon={IconPeople} label="Skater(s)" />
+            <ListRow cid="profile-skater1" avatarName="Danger Mouse" primary="Danger Mouse" trailing={<Stack direction="row" spacing={1}><Button variant="outlined" size="small">Edit</Button><Button variant="outlined" size="small">LOA</Button></Stack>} />
+            <ListRow cid="profile-skater2" avatarName="Corgi" primary="Corgi" trailing={<Stack direction="row" spacing={1}><Button variant="outlined" size="small">Edit</Button><Button variant="outlined" size="small">LOA</Button></Stack>} />
+            </Box>
+  <BottomNav variant="coach" active="more" cid="profile-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/profile" dataCid="profile-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="coaching-home" data-device="mobile-web" data-flow="Tap Practice to open the Attendance/Drills/Schedule tabs for practices">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>Coaching</Typography>
+            <ListRow cid="coaching-practice-row" primary="Practice" trailing={<IconChevronRight />} />
+            <ListRow cid="coaching-games-row" primary="Games" trailing={<IconChevronRight />} />
+            <ListRow cid="coaching-training-row" primary="Training Program" trailing={<IconChevronRight />} />
+            </Box>
+  <BottomNav variant="coach" active="coaching" cid="coaching-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/coaching-home" dataCid="coaching-home-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="practice-schedule" data-device="mobile-web" data-flow="Schedule tab: season list of practices, styled as event tiles. Tap Plan to open Edit Practice">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Button variant="text" size="small" startIcon={<IconBack style={{ width: 16, height: 16 }} />} sx={{ alignSelf: 'flex-start', minHeight: 'auto', p: 0.5, fontSize: '0.75rem' }}>Back</Button>
+            <PracticeTabs active="Schedule" cid="practice-tabs" />
+            <EventTile cid="schedule-row-aug13" chip="Practice" subChip="Team 1" date="Aug 13" time="Coach: Bull · Asst: Tara, Lazer"
+              extra={<Button size="small" variant="contained" data-cid="schedule-row-aug13-plan" sx={{ alignSelf: 'flex-start' }}>Plan</Button>} />
+            <EventTile cid="schedule-row-aug17" chip="Practice" subChip="Team 1" date="Aug 17" time="Coach: — · Asst: —"
+              extra={<React.Fragment>
+                <Alert severity="warning" icon={<IconError />} data-cid="schedule-missing-coach">Missing Coach</Alert>
+                <Button size="small" variant="contained" data-cid="schedule-row-aug17-plan" sx={{ alignSelf: 'flex-start' }}>Plan</Button>
+              </React.Fragment>} />
+            </Box>
+  <BottomNav variant="coach" active="coaching" cid="practice-schedule-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/practice-schedule" dataCid="practice-schedule-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="edit-practice" data-device="mobile-web" data-flow="Assign coach/assistant, reorder drills already added, or Add Drill to pull from the bank">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography variant="body2">Aug 13 · Practice</Typography>
+              <IconButton size="small" aria-label="Close" data-cid="edit-practice-close"><IconClose /></IconButton>
+            </Stack>
+            <Typography variant="caption">Coach: Bull · <Button size="small" data-cid="edit-practice-assign-coach" sx={{ minHeight: 'auto', p: 0, verticalAlign: 'baseline' }}>assign</Button></Typography>
+            <Typography variant="caption">Asst: Tara, Lazer · <Button size="small" data-cid="edit-practice-assign-asst" sx={{ minHeight: 'auto', p: 0, verticalAlign: 'baseline' }}>assign</Button></Typography>
+            <Divider />
+            <SectionHeader icon={IconSports} label="Drills" />
+            <DrillRow cid="edit-practice-drill-1" name="Circle of Fun" down />
+            <DrillRow cid="edit-practice-drill-2" name="Pack Def" up down />
+            <DrillRow cid="edit-practice-drill-3" name="Footwork" up />
+            </Box>
+  <Box sx={{ p: 2, pb: 1.5, bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Button variant="contained" fullWidth startIcon={<IconAdd />} data-cid="edit-practice-add-drill">Add Drill</Button>
+  </Box>
+  <BottomNav variant="coach" active="coaching" cid="edit-practice-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/edit-practice" dataCid="edit-practice-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="add-drill-to-practice" data-device="mobile-web" data-flow="Filter by type, expand categories, select drills from the bank, then attach to the practice plan — reached right after Edit Practice">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Button variant="text" size="small" startIcon={<IconBack style={{ width: 16, height: 16 }} />} sx={{ alignSelf: 'flex-start', minHeight: 'auto', p: 0.5, fontSize: '0.75rem' }}>Back</Button>
+              <IconButton size="small" aria-label="Close" data-cid="add-drill-close"><IconClose /></IconButton>
+            </Stack>
+            <TextField label="Type" fullWidth InputProps={{ startAdornment: <IconFilterAlt style={{ marginRight: 8, width: 18, height: 18 }} /> }} />
+            <DrillSelectCard cid="add-drill-category-footwork" checked name="Circle of Fun" type="Footwork" description="Skaters circle the track working on edges and stride length." />
+            <DrillSelectCard cid="add-drill-pack-def" checked name="Pack Def" type="Blocking" description="Wrap-around pack drill focused on positional blocking." />
+            <DrillSelectCard cid="add-drill-wall-pass" name="Wall Pass" type="Blocking" description="Skaters practice passing along a formed wall." />
+            <DrillSelectCard cid="add-drill-star-pass" name="Star Pass" type="Jamming" description="Practice legal star passes mid-jam." />
+            <DrillSelectCard cid="add-drill-apex-jump" name="Apex Jump" type="Jamming" description="Jumping the apex to gain track position." />
+            </Box>
+  <Box sx={{ p: 2, pb: 1.5, bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Button variant="contained" fullWidth size="large" data-cid="add-drill-submit">Add Drill to Practice</Button>
+  </Box>
+  <BottomNav variant="coach" active="coaching" cid="add-drill-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/add-drill-to-practice" dataCid="add-drill-to-practice-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="practice-attendance-list" data-device="mobile-web" data-flow="Attendance tab: pick a practice to take attendance for">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Button variant="text" size="small" startIcon={<IconBack style={{ width: 16, height: 16 }} />} sx={{ alignSelf: 'flex-start', minHeight: 'auto', p: 0.5, fontSize: '0.75rem' }}>Back</Button>
+            <PracticeTabs active="Attendance" />
+            <ListRow cid="attendance-pick-aug13" primary="Aug 13 · Practice" trailing={<IconChevronRight />} />
+            <ListRow cid="attendance-pick-aug17" primary="Aug 17 · Practice" trailing={<IconChevronRight />} />
+            </Box>
+  <BottomNav variant="coach" active="coaching" cid="practice-attendance-list-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/practice-attendance-list" dataCid="practice-attendance-list-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="attendance-entry" data-device="mobile-web" data-flow="Mark present/absent/partial per skater (present checked by default), add notes, Submit">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Button variant="text" size="small" startIcon={<IconBack style={{ width: 16, height: 16 }} />} sx={{ alignSelf: 'flex-start', minHeight: 'auto', p: 0.5, fontSize: '0.75rem' }}>Back</Button>
+              <Typography variant="caption">Filter by team</Typography>
+            </Stack>
+            <PracticeTabs active="Attendance" />
+            <Typography variant="caption" color="text.secondary">Aug 13 · Practice</Typography>
+            <ListRow cid="attendance-skater-1" avatarName="Danger Mouse" primary="Danger Mouse" trailing={<AttendanceToggle />} />
+            <ListRow cid="attendance-skater-2" avatarName="Corgi" primary="Corgi" trailing={<AttendanceToggle />} />
+            <ListRow cid="attendance-skater-3" avatarName="Skater 3" primary="Skater 3" trailing={<AttendanceToggle />} />
+            <TextField label="Notes" fullWidth data-cid="attendance-notes" />
+            </Box>
+  <Box sx={{ p: 2, pb: 1.5, bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Button variant="contained" fullWidth size="large" data-cid="attendance-submit">Submit</Button>
+  </Box>
+  <BottomNav variant="coach" active="coaching" cid="attendance-entry-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/attendance-entry" dataCid="attendance-entry-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="drills-bank" data-device="mobile-web" data-flow="Drills tab: bank of drills independent of any practice, each tagged by type. Tap one for Drill Detail">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Button variant="text" size="small" startIcon={<IconBack style={{ width: 16, height: 16 }} />} sx={{ alignSelf: 'flex-start', minHeight: 'auto', p: 0.5, fontSize: '0.75rem' }}>Back</Button>
+            <PracticeTabs active="Drills" cid="drills-bank-tabs" />
+            <ListRow cid="drills-bank-1" primary="Circle of Fun" trailing={<DrillTypeChip type="Footwork" />} />
+            <ListRow cid="drills-bank-2" primary="Burrito" trailing={<DrillTypeChip type="Blocking" />} />
+            <ListRow cid="drills-bank-3" primary="Pack Def" trailing={<DrillTypeChip type="Jamming" />} />
+            </Box>
+  <Box sx={{ p: 2, pb: 1.5, bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+            <IconButton data-cid="drills-bank-add" aria-label="Add drill" sx={{ bgcolor: 'primary.main', color: '#fff', width: 44, height: 44, '&:hover': { bgcolor: 'primary.dark' } }}><IconAdd /></IconButton>
+  </Box>
+  <BottomNav variant="coach" active="coaching" cid="drills-bank-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/drills-bank" dataCid="drills-bank-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="drill-detail" data-device="mobile-web" data-flow="Drill detail with type label, mock description, reference images, edit/delete">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>Pack Def</Typography>
+              <Stack direction="row" spacing={1} alignItems="center" data-cid="drill-detail-edit-delete">
+                <IconButton size="small" aria-label="Edit drill"><IconEdit /></IconButton>
+                <IconButton size="small" aria-label="Delete drill"><IconDelete /></IconButton>
+                <IconButton size="small" aria-label="Close"><IconClose /></IconButton>
+              </Stack>
+            </Stack>
+            <Box data-cid="drill-detail-type" sx={{ alignSelf: 'flex-start' }}><DrillTypeChip type="Jamming" /></Box>
+            <Typography variant="subtitle1" color="text.secondary" sx={{ fontWeight: 700 }}>Details</Typography>
+            <Typography variant="body1" data-cid="drill-detail-description">Two jammers work through a mock pack. Focus on hip whips and positional blocking. 3 sets of 5 minutes, alternating lead jammer.</Typography>
+            <Box data-cid="drill-detail-images" sx={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1 }}>
+              {['Diagram 1', 'Diagram 2', 'Diagram 3'].map((label) => (
+                <Box key={label} sx={{ border: '1.5px dashed', borderColor: 'divider', borderRadius: 1, aspectRatio: '1/1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, color: 'text.disabled' }}>
+                  <IconImage /><Typography variant="caption">{label}</Typography>
+                </Box>
+              ))}
+            </Box>
+            </Box>
+  <BottomNav variant="coach" active="coaching" cid="drill-detail-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/drill-detail" dataCid="drill-detail-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="admin-users" data-device="mobile-web" data-flow="Admin views all users; + Invite User opens Admin Invite User">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>Users</Typography>
+              <Button size="small" variant="contained" startIcon={<IconPersonAdd />} data-cid="admin-users-invite">Invite User</Button>
+            </Stack>
+            <ListRow cid="admin-user-1" avatarName="Melissa Wilcox" primary={<React.Fragment>Melissa Wilcox <Box component="span" sx={{ typography: 'caption', color: 'text.secondary' }}>(Bull Doze-Her)</Box></React.Fragment>} trailing={<RoleChip role="Coach" />} />
+            <ListRow cid="admin-user-2" avatarName="Justin Emery" primary="Justin Emery" trailing={<RoleChip role="Guardian" />} />
+            <ListRow cid="admin-user-3" avatarName="Violet" primary={<React.Fragment>Violet <Box component="span" sx={{ typography: 'caption', color: 'text.secondary' }}>(Danger Mouse)</Box></React.Fragment>} trailing={<RoleChip role="Skater" />} />
+            <ListRow cid="admin-user-4" avatarName="Sam Rivera" primary="Sam Rivera" trailing={<RoleChip role="Admin" />} />
+            </Box>
+  <BottomNav variant="coach" active="more" cid="admin-users-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/admin-users" dataCid="admin-users-url-bar" />
+          </div>
+        </section>
+
+        <section className="hifi-screen" data-screen="admin-invite-user" data-device="mobile-web" data-flow="Admin invites a new user by email; they complete sign-up via magic link">
+          <div className="hifi-mobile-frame hifi-mobile-frame--web">
+            <IosStatusBar />
+            <div className="hifi-screen-frame">
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', bgcolor: 'background.default' }}>
+  <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>Invite User</Typography>
+              <IconButton size="small" aria-label="Close" data-cid="admin-invite-close"><IconClose /></IconButton>
+            </Stack>
+            <TextField label="First name" fullWidth />
+            <TextField label="Last name" fullWidth />
+            <TextField label="Email" type="email" fullWidth />
+            <TextField label="Phone number" type="tel" fullWidth />
+            <TextField label="Team" fullWidth data-cid="admin-invite-team" />
+            </Box>
+  <Box sx={{ p: 2, pb: 1.5, bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Button variant="contained" fullWidth size="large" startIcon={<IconPersonAdd />} data-cid="admin-invite-submit">Invite</Button>
+  </Box>
+  <BottomNav variant="coach" active="more" cid="admin-invite-nav" />
+</Box>
+            </div>
+            <SafariBottomBar url="sjrd.app/admin-invite-user" dataCid="admin-invite-user-url-bar" />
+          </div>
+        </section>
+
+      </React.Fragment>
+    );
+  }
+
+  function App() {
+    React.useEffect(() => {
+      window.hifiAnnotations && window.hifiAnnotations.rescan();
+    });
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Screens />
+      </ThemeProvider>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+<script id="hifi-annotation-system">
+/* ============================================================================
+ * Hi-Fi Annotation System (category-aware, engine-agnostic)
+ * ----------------------------------------------------------------------------
+ * Drop-in vanilla-JS script that turns a hi-fi HTML file into a category-aware
+ * click-to-comment review surface. Works for BOTH rendering engines:
+ *   - shadcn engine: Tailwind Play CDN, static HTML body (no React).
+ *   - mui engine:    React + MUI UMD + Babel rendering into #root asynchronously.
+ *
+ * Because the MUI engine mounts asynchronously, this script (a) initialises on
+ * DOMContentLoaded, (b) re-scans `[data-cid]` elements whenever the active
+ * screen changes, and (c) exposes `window.hifiAnnotations.rescan()` so the MUI
+ * render code can call it after React commits. The shadcn engine needs neither —
+ * its DOM is present at parse time — but calling rescan() is harmless.
+ *
+ * Categories: visual · copy · spacing · state · general.
+ *
+ * Colors come from the viewer-shell tokens (--shell-*) defined in the starter
+ * template, NOT from the design system — so the overlay looks identical
+ * regardless of whether the body is shadcn-themed or MUI-themed.
+ * ============================================================================ */
+
+(function() {
+  'use strict';
+
+  const CATEGORIES = ['general', 'visual', 'copy', 'spacing', 'state'];
+  const CATEGORY_COLORS = {
+    general: '#64748B',   // slate-500
+    visual:  '#2563EB',   // blue-600
+    copy:    '#0891B2',   // cyan-600
+    spacing: '#CA8A04',   // yellow-600
+    state:   '#16A34A'    // green-600
+  };
+  const STORAGE_PREFIX = 'hifi';
+
+  // ============ STATE ============
+  const state = {
+    comments: JSON.parse(localStorage.getItem(STORAGE_PREFIX + '_comments') || '[]'),
+    commentMode: false,
+    activeScreen: null,
+    activeCategory: 'all',
+    nextId: 0,
+    selectedElement: null,
+    pinsHidden: localStorage.getItem(STORAGE_PREFIX + '_pins_hidden') === 'true'
+  };
+  state.nextId = state.comments.length > 0
+    ? Math.max(...state.comments.map(c => c.id)) + 1 : 1;
+
+  const screenNav = document.getElementById('screenNav');
+  const flowText = document.getElementById('flowText');
+
+  function allScreens() { return document.querySelectorAll('.hifi-screen'); }
+
+  // ============ SCREEN NAVIGATION ============
+  function buildTabs() {
+    if (!screenNav) return;
+    screenNav.innerHTML = '';
+    allScreens().forEach((screen, i) => {
+      const name = screen.dataset.screen;
+      const label = name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, ' ');
+      const tab = document.createElement('button');
+      tab.className = 'hifi-tab' + (i === 0 ? ' active' : '');
+      tab.textContent = label;
+      tab.dataset.target = name;
+      tab.addEventListener('click', () => switchScreen(name));
+      screenNav.appendChild(tab);
+    });
+  }
+
+  function switchScreen(name) {
+    allScreens().forEach(s => s.classList.toggle('active', s.dataset.screen === name));
+    if (screenNav) {
+      screenNav.querySelectorAll('.hifi-tab').forEach(t =>
+        t.classList.toggle('active', t.dataset.target === name)
+      );
+    }
+    state.activeScreen = name;
+    updateFlowBar(name);
+    if (state.commentMode) markCommentable();
+    renderPins();
+  }
+  // expose for the MUI engine, which may switch screens via React state
+  window.hifiSwitchScreen = switchScreen;
+
+  function updateFlowBar(name) {
+    if (!flowText) return;
+    const screens = Array.from(allScreens());
+    const idx = screens.findIndex(s => s.dataset.screen === name);
+    const sect = screens[idx];
+    const next = screens[idx + 1]?.dataset.screen;
+    flowText.textContent = sect?.dataset.flow ||
+      (next ? `User completes this screen → proceeds to "${next}"` : 'End of flow');
+  }
+
+  // ============ ANNOTATION PANEL ============
+  const panel = document.createElement('div');
+  panel.id = 'annotationPanel';
+  panel.innerHTML = `
+    <style>
+      #annotationPanel {
+        position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
+        background: var(--shell-surface, #fff);
+        border-top: 2px solid var(--shell-accent, #2563EB);
+        transform: translateY(calc(100% - 48px)); transition: transform 0.3s ease;
+        max-height: 60vh; display: flex; flex-direction: column;
+        font-family: var(--shell-font, system-ui, sans-serif);
+        color: var(--shell-text, #0F172A);
+      }
+      #annotationPanel.open { transform: translateY(0); }
+      .ann-toolbar {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 8px 24px; min-height: 48px; cursor: pointer; user-select: none;
+        flex-shrink: 0; gap: 12px; flex-wrap: wrap;
+      }
+      .ann-toolbar-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+      .ann-toolbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .ann-toggle-mode {
+        padding: 6px 16px; font-size: 13px; font-weight: 600; border-radius: 6px;
+        border: 1.5px solid; cursor: pointer; font-family: inherit; transition: all 150ms ease;
+      }
+      .ann-toggle-mode.off { background: var(--shell-surface,#fff); color: var(--shell-muted,#64748B); border-color: var(--shell-border,#E2E8F0); }
+      .ann-toggle-mode.on  { background: var(--shell-accent,#2563EB); color: white; border-color: var(--shell-accent,#2563EB); }
+      .ann-export-btn {
+        padding: 6px 16px; font-size: 13px; font-weight: 500; border-radius: 6px;
+        background: var(--shell-bg,#F8FAFC); color: var(--shell-text,#0F172A);
+        border: 1.5px solid var(--shell-border,#E2E8F0); cursor: pointer; font-family: inherit;
+      }
+      .ann-export-btn:hover { background: var(--shell-accent-soft,#DBEAFE); }
+      .ann-clear-btn {
+        padding: 6px 12px; font-size: 13px; font-weight: 500; border-radius: 6px;
+        background: transparent; color: #DC2626; border: 1.5px solid #DC2626; cursor: pointer; font-family: inherit;
+      }
+      .ann-count { font-size: 13px; font-weight: 600; color: var(--shell-muted,#64748B); }
+      .ann-cat-filter { display: flex; gap: 4px; flex-wrap: wrap; }
+      .ann-cat-filter button {
+        padding: 4px 10px; font-size: 12px; font-weight: 500; border-radius: 9999px;
+        border: 1px solid var(--shell-border,#E2E8F0); background: var(--shell-surface,#fff);
+        color: var(--shell-muted,#64748B); cursor: pointer; font-family: inherit;
+      }
+      .ann-cat-filter button.active { background: var(--shell-accent,#2563EB); color: white; border-color: var(--shell-accent,#2563EB); }
+      .ann-body { flex: 1; overflow-y: auto; padding: 0 24px 16px; }
+      .ann-comment-list { list-style: none; padding: 0; margin: 0; }
+      .ann-comment-item {
+        display: flex; gap: 12px; padding: 12px 0;
+        border-bottom: 1px solid var(--shell-border,#E2E8F0);
+        cursor: pointer; transition: background 150ms ease;
+      }
+      .ann-comment-item:hover { background: var(--shell-bg,#F8FAFC); margin: 0 -12px; padding: 12px; border-radius: 8px; }
+      .ann-pin-badge {
+        width: 28px; height: 28px; border-radius: 50%; background: var(--shell-accent,#2563EB); color: white;
+        display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;
+      }
+      .ann-comment-content { flex: 1; min-width: 0; }
+      .ann-comment-meta { font-size: 11px; color: var(--shell-muted,#64748B); margin-bottom: 4px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      .ann-cat-pill { display: inline-block; padding: 1px 8px; border-radius: 9999px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: white; }
+      .ann-comment-text { font-size: 14px; color: var(--shell-text,#0F172A); line-height: 1.4; }
+      .ann-comment-resolved { opacity: 0.5; text-decoration: line-through; }
+      .ann-resolve-btn, .ann-delete-btn { font-size: 11px; background: none; border: 1px solid; border-radius: 4px; padding: 2px 8px; cursor: pointer; margin-top: 4px; font-family: inherit; }
+      .ann-resolve-btn { color: #16A34A; border-color: #16A34A; }
+      .ann-delete-btn { color: #DC2626; border-color: #DC2626; margin-left: 4px; }
+      .ann-empty { text-align: center; padding: 32px; color: var(--shell-muted,#64748B); font-size: 14px; }
+      .hifi-comment-pin {
+        position: absolute; width: 24px; height: 24px; border-radius: 50%; background: var(--shell-accent,#2563EB);
+        color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+        z-index: 50; pointer-events: none; box-shadow: 0 2px 6px rgba(37,99,235,0.4); transform: translate(-50%, -50%);
+      }
+      body.pins-hidden .hifi-comment-pin { display: none; }
+      body.panel-open .hifi-main { padding-bottom: calc(60vh + 32px); }
+      .hifi-commentable { position: relative; }
+      body.comment-mode .hifi-screen.active .hifi-commentable:hover { outline: 2px solid var(--shell-accent,#2563EB) !important; outline-offset: 2px; cursor: crosshair; }
+      .ann-popover {
+        position: fixed; z-index: 2000; background: var(--shell-surface,#fff);
+        border: 2px solid var(--shell-accent,#2563EB); border-radius: 12px; padding: 16px; width: 320px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.15); font-family: var(--shell-font,system-ui,sans-serif);
+      }
+      .ann-popover label.field { display: block; font-size: 11px; font-weight: 600; color: var(--shell-muted,#64748B); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+      .ann-popover textarea { width: 100%; min-height: 80px; padding: 8px 12px; font-family: inherit; font-size: 14px; border: 1.5px solid var(--shell-border,#E2E8F0); border-radius: 8px; resize: vertical; margin-bottom: 8px; box-sizing: border-box; color: var(--shell-text,#0F172A); background: var(--shell-surface,#fff); }
+      .ann-popover textarea:focus { outline: none; border-color: var(--shell-accent,#2563EB); }
+      .ann-popover select { width: 100%; padding: 6px 10px; font-family: inherit; font-size: 13px; border: 1.5px solid var(--shell-border,#E2E8F0); border-radius: 6px; margin-bottom: 8px; box-sizing: border-box; background: var(--shell-surface,#fff); color: var(--shell-text,#0F172A); }
+      .ann-popover-actions { display: flex; gap: 8px; justify-content: flex-end; }
+      .ann-popover-label { font-size: 12px; color: var(--shell-muted,#64748B); margin-bottom: 8px; }
+      .ann-popover-actions button { padding: 6px 12px; font-size: 13px; font-weight: 500; border-radius: 6px; cursor: pointer; font-family: inherit; border: 1.5px solid; }
+      .ann-popover-actions .cancel { background: transparent; color: var(--shell-muted,#64748B); border-color: var(--shell-border,#E2E8F0); }
+      .ann-popover-actions .save { background: var(--shell-accent,#2563EB); color: white; border-color: var(--shell-accent,#2563EB); }
+    </style>
+    <div class="ann-toolbar" id="annToolbar">
+      <div class="ann-toolbar-left">
+        <button class="ann-toggle-mode off" id="annToggle">Comment Mode: Off</button>
+        <span class="ann-count" id="annCount">0 comments</span>
+        <button class="ann-export-btn" id="annPinsToggle">Hide Pins</button>
+      </div>
+      <div class="ann-toolbar-right">
+        <button class="ann-export-btn" id="annExport">Export JSON</button>
+        <button class="ann-export-btn" id="annCopy">Copy for Claude</button>
+        <button class="ann-clear-btn" id="annClear">Clear All</button>
+      </div>
+    </div>
+    <div style="padding: 0 24px 8px;">
+      <div class="ann-cat-filter" id="annCatFilter">
+        <button data-cat="all" class="active">All</button>
+        ${CATEGORIES.map(c => `<button data-cat="${c}">${c}</button>`).join('')}
+      </div>
+    </div>
+    <div class="ann-body" id="annBody">
+      <div class="ann-empty" id="annEmpty">Enable Comment Mode, then click any element to leave categorized feedback.</div>
+      <ul class="ann-comment-list" id="annList" style="display:none;"></ul>
+    </div>
+  `;
+  document.body.appendChild(panel);
+
+  // ============ MAKE ELEMENTS COMMENTABLE ============
+  // Engine-agnostic: any element carrying a data-cid is commentable, plus the
+  // semantic headings inside a screen. This works for shadcn (data-cid on the
+  // class-string markup) and MUI (data-cid passed via the component's data prop).
+  function markCommentable() {
+    document.querySelectorAll(
+      '.hifi-screen [data-cid], ' +
+      '.hifi-screen h1, .hifi-screen h2, .hifi-screen h3, .hifi-screen h4'
+    ).forEach(el => {
+      el.classList.add('hifi-commentable');
+      if (!el.dataset.cid) {
+        el.dataset.cid = el.tagName.toLowerCase() + '-' +
+          (el.textContent || '').trim().slice(0, 20).replace(/\s+/g, '-').toLowerCase() +
+          '-' + Math.random().toString(36).slice(2, 6);
+      }
+    });
+  }
+
+  // Public rescan hook for the MUI engine to call after React commits / route change.
+  window.hifiAnnotations = {
+    rescan() { if (state.commentMode) markCommentable(); renderPins(); }
+  };
+
+  // ============ TOGGLE COMMENT MODE ============
+  const toggleBtn = document.getElementById('annToggle');
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    state.commentMode = !state.commentMode;
+    toggleBtn.textContent = `Comment Mode: ${state.commentMode ? 'On' : 'Off'}`;
+    toggleBtn.className = `ann-toggle-mode ${state.commentMode ? 'on' : 'off'}`;
+    document.body.classList.toggle('comment-mode', state.commentMode);
+    markCommentable();
+  });
+
+  // ============ PIN VISIBILITY ============
+  const pinsToggleBtn = document.getElementById('annPinsToggle');
+  function applyPinsHidden() {
+    document.body.classList.toggle('pins-hidden', state.pinsHidden);
+    pinsToggleBtn.textContent = state.pinsHidden ? 'Show Pins' : 'Hide Pins';
+  }
+  pinsToggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    state.pinsHidden = !state.pinsHidden;
+    applyPinsHidden();
+    try { localStorage.setItem(STORAGE_PREFIX + '_pins_hidden', String(state.pinsHidden)); } catch(_) {}
+  });
+  applyPinsHidden();
+
+  // ============ CATEGORY FILTER ============
+  document.getElementById('annCatFilter').addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    e.stopPropagation();
+    state.activeCategory = btn.dataset.cat;
+    document.getElementById('annCatFilter').querySelectorAll('button')
+      .forEach(b => b.classList.toggle('active', b === btn));
+    renderComments();
+    renderPins();
+  });
+
+  // ============ PANEL EXPAND/COLLAPSE ============
+  function setPanelOpen(open) {
+    panel.classList.toggle('open', open);
+    document.body.classList.toggle('panel-open', open);
+  }
+  document.getElementById('annToolbar').addEventListener('click', (e) => {
+    if (e.target === toggleBtn || e.target === pinsToggleBtn || e.target.closest('.ann-toolbar-right')) return;
+    setPanelOpen(!panel.classList.contains('open'));
+  });
+
+  // ============ CLICK TO COMMENT ============
+  document.addEventListener('click', (e) => {
+    if (!state.commentMode) return;
+    const target = e.target.closest('.hifi-commentable');
+    if (!target || e.target.closest('#annotationPanel') || e.target.closest('.ann-popover')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openPopover(target, e.clientX, e.clientY);
+  });
+
+  function openPopover(element, x, y) {
+    closePopover();
+    state.selectedElement = element;
+    const pop = document.createElement('div');
+    pop.className = 'ann-popover';
+    pop.id = 'annPopover';
+
+    const elementName = element.dataset.cid || element.tagName.toLowerCase();
+    const screenName = element.closest('.hifi-screen')?.dataset.screen || state.activeScreen;
+
+    pop.innerHTML = `
+      <div class="ann-popover-label">Comment on: <strong>${elementName}</strong><br/>Screen: ${screenName}</div>
+      <label class="field" for="annCat">Category</label>
+      <select id="annCat">
+        ${CATEGORIES.map(c => `<option value="${c}" ${c==='general'?'selected':''}>${c}</option>`).join('')}
+      </select>
+      <label class="field" for="annInput">Comment</label>
+      <textarea id="annInput" placeholder="Describe the change you'd like..." autofocus></textarea>
+      <div class="ann-popover-actions">
+        <button class="cancel" id="annCancel">Cancel</button>
+        <button class="save" id="annSave">Save Comment</button>
+      </div>
+    `;
+
+    const popW = 320, popH = 300;
+    let left = Math.min(x + 12, window.innerWidth - popW - 16);
+    let top = Math.min(y + 12, window.innerHeight - popH - 16);
+    left = Math.max(16, left); top = Math.max(16, top);
+    pop.style.left = left + 'px';
+    pop.style.top = top + 'px';
+
+    document.body.appendChild(pop);
+    pop.querySelector('#annInput').focus();
+
+    pop.querySelector('#annCancel').addEventListener('click', closePopover);
+    pop.querySelector('#annSave').addEventListener('click', () => {
+      const text = pop.querySelector('#annInput').value.trim();
+      const category = pop.querySelector('#annCat').value;
+      if (!text) return;
+
+      const rect = element.getBoundingClientRect();
+      const screenRect = element.closest('.hifi-screen-frame')?.getBoundingClientRect() || rect;
+
+      state.comments.push({
+        id: state.nextId++,
+        screen: screenName,
+        element: elementName,
+        category,
+        text,
+        position: {
+          x: Math.round(rect.left - screenRect.left + rect.width / 2),
+          y: Math.round(rect.top - screenRect.top + rect.height / 2)
+        },
+        timestamp: new Date().toISOString(),
+        resolved: false
+      });
+      saveComments();
+      renderComments();
+      renderPins();
+      closePopover();
+      setPanelOpen(true);
+    });
+  }
+
+  function closePopover() {
+    const pop = document.getElementById('annPopover');
+    if (pop) pop.remove();
+    state.selectedElement = null;
+  }
+
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePopover(); });
+
+  // ============ RENDER ============
+  function visibleComments() {
+    if (state.activeCategory === 'all') return state.comments;
+    return state.comments.filter(c => c.category === state.activeCategory);
+  }
+
+  function renderComments() {
+    const list = document.getElementById('annList');
+    const empty = document.getElementById('annEmpty');
+    const count = document.getElementById('annCount');
+    const visible = visibleComments();
+    count.textContent = `${visible.length} comment${visible.length !== 1 ? 's' : ''}` +
+      (state.activeCategory !== 'all' ? ` · ${state.activeCategory}` : '');
+
+    if (visible.length === 0) { empty.style.display = 'block'; list.style.display = 'none'; return; }
+    empty.style.display = 'none';
+    list.style.display = 'block';
+
+    const grouped = {};
+    visible.forEach(c => { (grouped[c.screen] = grouped[c.screen] || []).push(c); });
+
+    list.innerHTML = Object.entries(grouped).map(([screen, comments]) => `
+      <li style="padding:8px 0;font-weight:600;font-size:12px;color:var(--shell-muted,#64748B);text-transform:uppercase;letter-spacing:0.05em;border:none;list-style:none;">${screen}</li>
+      ${comments.map(c => `
+        <li class="ann-comment-item ${c.resolved ? 'ann-comment-resolved' : ''}" data-comment-id="${c.id}" data-screen="${c.screen}">
+          <div class="ann-pin-badge" style="background: ${CATEGORY_COLORS[c.category]||CATEGORY_COLORS.general};">${c.id}</div>
+          <div class="ann-comment-content">
+            <div class="ann-comment-meta">
+              <span class="ann-cat-pill" style="background:${CATEGORY_COLORS[c.category]||CATEGORY_COLORS.general};">${c.category}</span>
+              <span>${c.element}</span><span>·</span><span>${new Date(c.timestamp).toLocaleTimeString()}</span>
+            </div>
+            <div class="ann-comment-text">${escapeHtml(c.text)}</div>
+            <div style="display:flex;gap:4px;margin-top:4px;">
+              ${!c.resolved ? `<button class="ann-resolve-btn" data-id="${c.id}">✓ Resolve</button>` : ''}
+              <button class="ann-delete-btn" data-id="${c.id}">✕ Delete</button>
+            </div>
+          </div>
+        </li>
+      `).join('')}
+    `).join('');
+
+    list.querySelectorAll('.ann-resolve-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = parseInt(btn.dataset.id);
+        const c = state.comments.find(c => c.id === id);
+        if (c) { c.resolved = true; saveComments(); renderComments(); renderPins(); }
+      });
+    });
+    list.querySelectorAll('.ann-delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = parseInt(btn.dataset.id);
+        state.comments = state.comments.filter(c => c.id !== id);
+        saveComments(); renderComments(); renderPins();
+      });
+    });
+    list.querySelectorAll('.ann-comment-item[data-screen]').forEach(item => {
+      item.addEventListener('click', () => {
+        const screen = item.dataset.screen;
+        if (screen && screen !== state.activeScreen) switchScreen(screen);
+      });
+    });
+  }
+
+  function renderPins() {
+    document.querySelectorAll('.hifi-comment-pin').forEach(p => p.remove());
+    const visible = state.comments.filter(c =>
+      c.screen === state.activeScreen && !c.resolved &&
+      (state.activeCategory === 'all' || c.category === state.activeCategory)
+    );
+    visible.forEach(c => {
+      const screenEl = document.querySelector(`.hifi-screen[data-screen="${c.screen}"] .hifi-screen-frame`);
+      if (!screenEl) return;
+      const pin = document.createElement('div');
+      pin.className = 'hifi-comment-pin';
+      pin.textContent = c.id;
+      pin.style.left = c.position.x + 'px';
+      pin.style.top = c.position.y + 'px';
+      pin.style.background = CATEGORY_COLORS[c.category] || CATEGORY_COLORS.general;
+      screenEl.style.position = 'relative';
+      screenEl.appendChild(pin);
+    });
+  }
+
+  // ============ EXPORT ============
+  document.getElementById('annExport').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const projectName = document.querySelector('.hifi-header-title')?.textContent?.trim() || 'Hi-Fi';
+    const exportData = {
+      project: projectName,
+      stage: 'hifi',
+      exported_at: new Date().toISOString(),
+      total_comments: state.comments.length,
+      pending: state.comments.filter(c => !c.resolved).length,
+      resolved: state.comments.filter(c => c.resolved).length,
+      by_category: CATEGORIES.reduce((acc, cat) => { acc[cat] = state.comments.filter(c => c.category === cat).length; return acc; }, {}),
+      screens: {}
+    };
+    state.comments.forEach(c => {
+      (exportData.screens[c.screen] = exportData.screens[c.screen] || []).push({
+        id: c.id, element: c.element, category: c.category, text: c.text,
+        position: c.position, timestamp: c.timestamp, resolved: c.resolved
+      });
+    });
+    exportData.screens = Object.entries(exportData.screens).map(([name, comments]) => ({ name, comments }));
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'hifi-comments.json';
+    a.click();
+  });
+
+  document.getElementById('annCopy').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const pending = state.comments.filter(c => !c.resolved);
+    if (pending.length === 0) { alert('No pending comments to copy.'); return; }
+    let text = 'Here are the hi-fi review comments. Use the wireframe-to-hifi skill to apply them — create a NEW version file (`<slug>-hifi-v<N+1>.html` in `projects/<slug>/hifi/`). Do not edit the current file in place.\n\n';
+    const byCat = {};
+    pending.forEach(c => {
+      byCat[c.category] = byCat[c.category] || {};
+      (byCat[c.category][c.screen] = byCat[c.category][c.screen] || []).push(c);
+    });
+    Object.entries(byCat).forEach(([cat, screens]) => {
+      text += `## Category: ${cat}\n\n`;
+      Object.entries(screens).forEach(([screen, comments]) => {
+        text += `**Screen: ${screen}**\n`;
+        comments.forEach(c => { text += `- [${c.element}]: ${c.text}\n`; });
+        text += '\n';
+      });
+    });
+    copyToClipboard(text).then(() => {
+      const btn = document.getElementById('annCopy');
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = orig, 2000);
+    }).catch(err => { console.warn('[ann] Copy failed:', err); showCopyFallback(text); });
+  });
+
+  // Clipboard helper: navigator.clipboard on https/localhost; textarea fallback for file://.
+  function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+    return new Promise((resolve, reject) => {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy') ? resolve() : reject(new Error('execCommand returned false')); }
+      catch (e) { reject(e); } finally { document.body.removeChild(ta); }
+    });
+  }
+
+  function showCopyFallback(text) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:24px;';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:8px;padding:16px;max-width:720px;width:100%;display:flex;flex-direction:column;gap:8px;box-shadow:0 24px 48px rgba(0,0,0,0.3);">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <strong style="font:600 14px system-ui;">Copy these comments manually</strong>
+          <button id="annFallbackClose" style="border:0;background:#eee;border-radius:4px;padding:4px 8px;cursor:pointer;">Close</button>
+        </div>
+        <p style="margin:0;font:13px system-ui;color:#555;">Automatic copy isn't available on file:// pages. Select all the text below and copy it.</p>
+        <textarea id="annFallbackText" readonly style="width:100%;height:320px;font:12px/1.4 ui-monospace,Menlo,monospace;padding:12px;border:1px solid #ccc;border-radius:4px;"></textarea>
+      </div>`;
+    document.body.appendChild(overlay);
+    const ta = overlay.querySelector('#annFallbackText');
+    ta.value = text; ta.focus(); ta.select();
+    overlay.querySelector('#annFallbackClose').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  }
+
+  document.getElementById('annClear').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (state.comments.length === 0) return;
+    if (!confirm('Delete all comments? This cannot be undone.')) return;
+    state.comments = [];
+    state.nextId = 1;
+    saveComments(); renderComments(); renderPins();
+  });
+
+  // ============ UTILITIES ============
+  function saveComments() { try { localStorage.setItem(STORAGE_PREFIX + '_comments', JSON.stringify(state.comments)); } catch(e) {} }
+  function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+  // ============ INIT ============
+  function init() {
+    buildTabs();
+    state.activeScreen = allScreens()[0]?.dataset.screen;
+    renderComments();
+    renderPins();
+    updateFlowBar(state.activeScreen);
+    markCommentable();
+  }
+
+  // The shadcn engine has its DOM ready immediately. The MUI engine renders into
+  // #root asynchronously, so screen tabs may not exist yet at parse time — retry
+  // until at least one .hifi-screen appears (then the MUI code can also call
+  // window.hifiAnnotations.rescan() after route changes).
+  if (allScreens().length > 0) {
+    init();
+  } else {
+    let tries = 0;
+    const poll = setInterval(() => {
+      if (allScreens().length > 0 || ++tries > 40) { clearInterval(poll); init(); }
+    }, 50);
+  }
+})();
+</script>
+
+</body>
+</html>

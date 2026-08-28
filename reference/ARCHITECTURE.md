@@ -123,24 +123,29 @@ Build a two-application system sharing one backend:
 ## Authentication & Authorization
 
 - **Auth:** Supabase Auth (email/password and/or magic link) issues a JWT used by all three clients (iOS, Android, web app).
-- **Roles:** `member`, `coach`, `admin`, stored on a `profiles` table keyed to `auth.users`.
-- **Enforcement:** Row Level Security policies on every table reference the requesting user's role and relationships (e.g., a coach can write to sessions for teams they're assigned to; a member can read their own signups and team schedule; an admin can read/write everything). This is enforced at the database layer, so there is no separate authorization code path to keep in sync across clients.
+- **Roles:** Seven user types — `guardian`, `skater`, `coach`, `trainer`, `medic`, `official`, `admin` — stored in a `profile_user_types` join table keyed to a `profiles` record (which extends `auth.users`). A single profile can hold multiple types (e.g. a coach who is also a guardian). See `DATA.md` for per-type permission definitions.
+- **Enforcement:** Row Level Security policies on every table reference the requesting user's type(s) and relationships (e.g., a coach can write attendance for events they are assigned to; a skater can read their own roster and attendance; a guardian can read their children's events; an admin can read/write everything). This is enforced at the database layer, so there is no separate authorization code path to keep in sync across clients.
 - **Deep linking:** iOS Universal Links and Android App Links tie native apps to `yourdomain.org`/`app.yourdomain.org` URLs via `apple-app-site-association` and `assetlinks.json`, served as static files from the Next.js app's `/.well-known/` path. A link (in a push notification or email) to a schedule page opens the native app if installed, or falls back to the web app/public site in-browser if not. Also used for auth email redirects (magic link, password reset).
 
-## Proposed Data Model (starting point — refine during implementation)
+## Data Model
 
-This was not fully specified in the design conversation; it's included as a reasonable starting schema to accelerate implementation, not a finalized decision.
+See `reference/DATA.md` for the full schema. Key tables:
 
-- `profiles` — id (fk to auth.users), full_name, role (member | coach | admin), contact info
-- `teams` — id, name, season_id, coach_id (fk to profiles)
-- `seasons` — id, name, start_date, end_date
-- `training_programs` — id, name, description, season_id
-- `sessions` — id, team_id or training_program_id, start_time, end_time, location, notes (coach planning content)
-- `signups` — id, profile_id, training_program_id, status (pending | approved | waitlisted), created_at
-- `attendance` — id, session_id, profile_id, status
-- `notifications` — id, profile_id, type, payload, sent_at, channel (push | email)
+- `profiles` — extends `auth.users`; holds league-specific fields (names, derby name, skater number, phone, status)
+- `profile_user_types` — join table assigning one or more user types to a profile
+- `guardian_relationships` — links guardian profiles to child (skater) profiles
+- `locations` — venues; one flagged `is_default` as the league home rink
+- `teams` / `team_members` — teams and their skater rosters
+- `registrations` — skater applications to the league program (pending | approved | waitlisted | rejected)
+- `event_series` — recurring event templates with RRULE
+- `event_instances` — individual occurrences; join tables for teams, coaches, and medics
+- `rosters` — skaters selected for a game event, with `is_alternate` flag
+- `attendances` — per-skater attendance per event (present | partial | absent | excused)
+- `push_tokens` — per-device Expo push tokens, pruned on `DeviceNotRegistered` error
+- `notification_log` — audit log of automated notifications sent; prevents duplicate sends on Edge Function retry
+- `drills` / `drill_drill_types` — coach drill library
 
-RLS policy sketch: members can `select` their own `profiles`, `signups`, and their team's `sessions`; coaches can `select`/`update` `sessions` and `attendance` for teams where `teams.coach_id = auth.uid()`; admins bypass via a role check in each policy.
+RLS policy sketch: skaters can `select` their own profile, events, attendance, and roster entries; guardians can `select` children's events and attendance; coaches can `select`/`update` events and attendance for events they are assigned to via `event_coaches`; admins bypass all restrictions via a role check in each policy.
 
 ## Notifications
 
