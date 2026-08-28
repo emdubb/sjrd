@@ -1,100 +1,53 @@
 import { createTheme } from '@mui/material/styles';
 
-const githubTheme = createTheme({
+const sjrdTheme = createTheme({
   palette: {
-    mode: 'dark',
+    mode: 'light',
     primary: {
-      main: '#58A6FF',
-      dark: '#1F6FEB',
-      light: '#79C0FF',
-      contrastText: '#0D1117',
+      main: '#0B233F',
+      light: '#112C56',
+      contrastText: '#FFFFFF',
     },
     secondary: {
-      main: '#3FB950',
-      dark: '#238636',
-      light: '#56D364',
-      contrastText: '#0D1117',
-    },
-    error: {
-      main: '#F85149',
-      dark: '#DA3633',
-      light: '#FF7B72',
-    },
-    warning: {
-      main: '#D29922',
-      dark: '#BB8009',
-      light: '#E3B341',
-    },
-    success: {
-      main: '#3FB950',
-      dark: '#238636',
-      light: '#56D364',
+      main: '#F2BF35',
+      contrastText: '#0B233F',
     },
     background: {
-      default: '#0D1117',
-      paper: '#161B22',
+      default: '#FFFFFF',
+      paper: '#FFFFFF',
     },
     text: {
-      primary: '#E6EDF3',
-      secondary: '#8B949E',
-      disabled: '#484F58',
+      primary: '#0B233F',
+      secondary: '#6B7A8D',
     },
-    divider: '#30363D',
+    error: {
+      main: '#D32F2F',
+    },
+    divider: '#E0E6ED',
   },
   typography: {
     fontFamily:
-      '-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
-    h1: { fontWeight: 600 },
-    h2: { fontWeight: 600 },
-    h3: { fontWeight: 600 },
-    h4: { fontWeight: 600 },
-    h5: { fontWeight: 600 },
-    h6: { fontWeight: 600 },
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+    h5: { fontWeight: 700 },
+    h6: { fontWeight: 700 },
+    subtitle1: { fontWeight: 700 },
     button: { textTransform: 'none', fontWeight: 500 },
   },
   shape: {
-    borderRadius: 6,
+    borderRadius: 8,
   },
   components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 6,
-          padding: '5px 16px',
-          fontSize: '0.875rem',
-          lineHeight: '20px',
-          boxShadow: 'none',
-          '&:hover': { boxShadow: 'none' },
-        },
-        containedPrimary: {
-          backgroundColor: '#238636',
-          color: '#FFFFFF',
-          border: '1px solid rgba(240,246,252,0.1)',
-          '&:hover': { backgroundColor: '#2EA043' },
-        },
-      },
-    },
     MuiCard: {
       styleOverrides: {
-        root: {
-          border: '1px solid #30363D',
-          backgroundImage: 'none',
-        },
+        root: { backgroundImage: 'none' },
       },
     },
-    MuiOutlinedInput: {
+    MuiAppBar: {
       styleOverrides: {
-        root: {
-          '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#30363D',
-          },
-          '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#8B949E',
-          },
-        },
+        root: { backgroundImage: 'none' },
       },
     },
   },
 });
 
-export default githubTheme;
+export default sjrdTheme;
