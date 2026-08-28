@@ -1,0 +1,24 @@
+{
+  "name": "sjrd",
+  "private": true,
+  "packageManager": "pnpm@11.24.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "pnpm --filter @sjrd/web dev",
+    "dev:app": "pnpm --filter @sjrd/app start",
+    "build:web": "pnpm --filter @sjrd/web build",
+    "build:app": "pnpm --filter @sjrd/app build",
+    "typecheck": "pnpm --filter @sjrd/web typecheck && pnpm --filter @sjrd/app typecheck",
+    "lint": "echo \"No lint configured yet\"",
+    "db:start": "cd packages/backend && supabase start",
+    "db:reset": "pnpm db:seed",
+    "db:seed": "cd packages/backend && supabase db query < seed.sql"
+  },
+  "devDependencies": {
+    "@supabase/cli": "^1",
+    "typescript": "^5"
+  }
+}
