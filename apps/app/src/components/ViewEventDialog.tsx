@@ -1,7 +1,15 @@
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  Typography, Box, Button, IconButton, Divider, Chip,
-  useTheme, useMediaQuery,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Typography,
+  Box,
+  Button,
+  IconButton,
+  Divider,
+  Chip,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -9,7 +17,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupIcon from '@mui/icons-material/Group';
 import RepeatIcon from '@mui/icons-material/Repeat';
 import NotesIcon from '@mui/icons-material/Notes';
-import { AppEvent, BRAND, MONTH_NAMES } from '../lib/mockEvents';
+import { BRAND, MONTH_NAMES, type AppEvent } from '../lib/mockEvents';
 
 const CANCELLED_RED = '#C62828';
 const DEFAULT_LOCATION = '1701 Thorton Ave, Sacramento CA 95811';
@@ -25,7 +33,9 @@ function DetailRow({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, py: 1 }}>
       <Box sx={{ color: '#9AABBD', mt: 0.25, flexShrink: 0 }}>{icon}</Box>
-      <Typography variant="body2" sx={{ color: '#4A5568', lineHeight: 1.6 }}>{text}</Typography>
+      <Typography variant="body2" sx={{ color: '#4A5568', lineHeight: 1.6 }}>
+        {text}
+      </Typography>
     </Box>
   );
 }
@@ -95,7 +105,6 @@ export function ViewEventDialog({ event, onClose, onEdit }: Props) {
 
       {/* ── CONTENT ── */}
       <DialogContent sx={{ px: 3, pt: 2.5, pb: 3 }}>
-
         {/* Type / cancelled badge */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
           <Chip

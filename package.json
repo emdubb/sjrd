@@ -12,13 +12,24 @@
     "build:web": "pnpm --filter @sjrd/web build",
     "build:app": "pnpm --filter @sjrd/app build",
     "typecheck": "pnpm --filter @sjrd/web typecheck && pnpm --filter @sjrd/app typecheck",
-    "lint": "echo \"No lint configured yet\"",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "db:start": "cd packages/backend && supabase start",
     "db:reset": "pnpm db:seed",
     "db:seed": "cd packages/backend && supabase db query < seed.sql"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@next/eslint-plugin-next": "^16.3.3",
     "@supabase/cli": "^1",
-    "typescript": "^5"
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "prettier": "^3.9.6",
+    "typescript": "^5",
+    "typescript-eslint": "^8.68.0"
   }
 }

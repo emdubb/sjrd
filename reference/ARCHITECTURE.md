@@ -38,42 +38,48 @@ Build a two-application system sharing one backend:
 ### Frontend/mobile split
 
 #### Option A: Two separate apps — Next.js (public + portal) and Expo (mobile only)
-| Dimension | Assessment |
-|---|---|
-| Complexity | Medium — two codebases, some shared types |
-| Cost | Low |
-| SEO/content quality | High (Next.js SSG) |
-| Maintenance | Two UIs to update in parallel for portal features |
+
+| Dimension           | Assessment                                        |
+| ------------------- | ------------------------------------------------- |
+| Complexity          | Medium — two codebases, some shared types         |
+| Cost                | Low                                               |
+| SEO/content quality | High (Next.js SSG)                                |
+| Maintenance         | Two UIs to update in parallel for portal features |
 
 #### Option B: Everything in Expo (Expo Router web export for public pages too)
-| Dimension | Assessment |
-|---|---|
-| Complexity | Low — one codebase for all three platforms + web |
-| Cost | Low |
+
+| Dimension           | Assessment                                                                                                                                          |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Complexity          | Low — one codebase for all three platforms + web                                                                                                    |
+| Cost                | Low                                                                                                                                                 |
 | SEO/content quality | Lower — React Native Web is optimized for app UI, not content-heavy public pages; static web export for Expo Router is less mature than Next.js SSG |
-| Maintenance | Lowest — single UI codebase |
+| Maintenance         | Lowest — single UI codebase                                                                                                                         |
 
 #### Option C (chosen): Next.js for public content, Expo (iOS + Android + Web) for the authenticated app
-| Dimension | Assessment |
-|---|---|
-| Complexity | Medium — two codebases, but cleanly divided by responsibility (content vs. app) rather than duplicated |
-| Cost | Low |
-| SEO/content quality | High for public pages (Next.js), and irrelevant for the app (auth-gated, not discovered via search) |
-| Maintenance | Low — Expo Router already produces the web build "for free" from the same code as iOS/Android; no separate portal implementation needed in Next.js |
+
+| Dimension           | Assessment                                                                                                                                         |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Complexity          | Medium — two codebases, but cleanly divided by responsibility (content vs. app) rather than duplicated                                             |
+| Cost                | Low                                                                                                                                                |
+| SEO/content quality | High for public pages (Next.js), and irrelevant for the app (auth-gated, not discovered via search)                                                |
+| Maintenance         | Low — Expo Router already produces the web build "for free" from the same code as iOS/Android; no separate portal implementation needed in Next.js |
 
 **Rationale:** The public pages (league info, coach bios) are genuine content that benefits from Next.js's SSG strengths (SEO, image handling, flexible layout). The authenticated app (schedules, coach tools, admin) is used deliberately by logged-in users, not discovered via search, so React Native Web's app-shaped primitives are a good fit there and cost nothing extra — Expo Router already builds to web alongside iOS/Android from one codebase. This gives the lowest-maintenance split without sacrificing public-page quality.
 
 ### Backend
 
 #### Option A: Custom Node/Express (or similar) API + hosted Postgres
+
 **Pros:** Full control over API contract and business logic.
 **Cons:** You own provisioning, patching, scaling, and monitoring a server. Auth has to be built or bolted on. Meaningfully more ongoing operational burden for a solo maintainer.
 
 #### Option B: Firebase (Firestore + Auth + Cloud Messaging)
+
 **Pros:** Very mature native push notification integration (FCM).
 **Cons:** Firestore's document model is a weaker fit for this domain's relational data (teams, rosters, sessions, signups, attendance all have real foreign-key relationships). More vendor lock-in — no open-source self-host path.
 
 #### Option C (chosen): Supabase (Postgres + Auth + RLS + Storage + Edge Functions)
+
 **Pros:** Relational data model fits the domain well. Row Level Security enforces the member/coach/admin permission model at the database layer, so both clients (Next.js and Expo) get consistent authorization automatically — no duplicated logic. Auto-generated REST API (PostgREST) means no server to write or host for standard CRUD. Open source and Postgres-based, so it's portable if a future maintainer ever needs to move off it. Generous free tier.
 **Cons:** Coupled to Supabase's RLS/PostgREST conventions; complex multi-step business logic that isn't pure data access needs Edge Functions rather than a general-purpose API layer.
 
@@ -156,26 +162,26 @@ RLS policy sketch: skaters can `select` their own profile, events, attendance, a
 
 ## Deployment & Hosting
 
-| Component | Host | Why |
-|---|---|---|
-| Next.js public site | Cloudflare Pages | Free tier explicitly allows commercial/nonprofit use, unlimited bandwidth — cleaner fit than Vercel's Hobby tier, which is personal-use-only by ToS |
-| Expo web export (app) | Cloudflare Pages (separate project, `app.yourdomain.org`) | Same reasoning as above |
-| Native iOS/Android builds | EAS Build | Free tier: 15 iOS + 15 Android builds/month, sufficient for infrequent releases |
-| Database/Auth/Storage/Functions | Supabase | See Backend decision above |
-| Email | Resend | Free tier: 3,000 emails/month (100/day cap) |
-| DNS/domain | Any registrar | ~$12–20/year |
+| Component                       | Host                                                      | Why                                                                                                                                                 |
+| ------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Next.js public site             | Cloudflare Pages                                          | Free tier explicitly allows commercial/nonprofit use, unlimited bandwidth — cleaner fit than Vercel's Hobby tier, which is personal-use-only by ToS |
+| Expo web export (app)           | Cloudflare Pages (separate project, `app.yourdomain.org`) | Same reasoning as above                                                                                                                             |
+| Native iOS/Android builds       | EAS Build                                                 | Free tier: 15 iOS + 15 Android builds/month, sufficient for infrequent releases                                                                     |
+| Database/Auth/Storage/Functions | Supabase                                                  | See Backend decision above                                                                                                                          |
+| Email                           | Resend                                                    | Free tier: 3,000 emails/month (100/day cap)                                                                                                         |
+| DNS/domain                      | Any registrar                                             | ~$12–20/year                                                                                                                                        |
 
 ## Cost Breakdown
 
-| Item | Cost | Notes |
-|---|---|---|
-| Cloudflare Pages (both static sites) | $0 | Free tier, no bandwidth limit, commercial use allowed |
-| Supabase | $0 to start, $25/mo (Pro) later | Free: 500MB DB, 50K MAUs, 1GB storage, 5GB egress. **Free projects pause after 7 days of inactivity** — relevant for a seasonal league with an off-season; Pro removes this |
-| EAS Build | $0 | Free tier covers infrequent app releases (15+15 builds/mo) |
-| Resend | $0 | Free tier: 3,000 emails/mo |
-| Apple Developer Program | $99/year | Mandatory, recurring, required for iOS App Store distribution |
-| Google Play | $25 one-time | One-time registration fee, no recurring cost |
-| Domain | ~$12–20/year | |
+| Item                                 | Cost                            | Notes                                                                                                                                                                       |
+| ------------------------------------ | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cloudflare Pages (both static sites) | $0                              | Free tier, no bandwidth limit, commercial use allowed                                                                                                                       |
+| Supabase                             | $0 to start, $25/mo (Pro) later | Free: 500MB DB, 50K MAUs, 1GB storage, 5GB egress. **Free projects pause after 7 days of inactivity** — relevant for a seasonal league with an off-season; Pro removes this |
+| EAS Build                            | $0                              | Free tier covers infrequent app releases (15+15 builds/mo)                                                                                                                  |
+| Resend                               | $0                              | Free tier: 3,000 emails/mo                                                                                                                                                  |
+| Apple Developer Program              | $99/year                        | Mandatory, recurring, required for iOS App Store distribution                                                                                                               |
+| Google Play                          | $25 one-time                    | One-time registration fee, no recurring cost                                                                                                                                |
+| Domain                               | ~$12–20/year                    |                                                                                                                                                                             |
 
 **Estimated total:** ~$0/month in active hosting costs to start; effectively ~$8–10/month once the Apple fee is amortized. Expect to add Supabase Pro ($25/mo) once the league is active enough that the inactivity-pause becomes a problem, or once free-tier limits are exceeded — bringing steady-state cost to roughly $25–35/month.
 

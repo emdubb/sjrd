@@ -26,8 +26,7 @@ const sjrdTheme = createTheme({
     divider: '#E0E6ED',
   },
   typography: {
-    fontFamily:
-      '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
     h5: { fontWeight: 700 },
     h6: { fontWeight: 700 },
     subtitle1: { fontWeight: 700 },

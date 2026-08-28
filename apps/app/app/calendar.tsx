@@ -1,7 +1,15 @@
+/* eslint-disable max-lines -- TODO: extract DayCells, EventCard, and event list into separate files */
 import { useState, useMemo } from 'react';
 import {
-  Box, Typography, IconButton, Card, CardContent,
-  Fab, Divider, useTheme, useMediaQuery,
+  Box,
+  Typography,
+  IconButton,
+  Card,
+  CardContent,
+  Fab,
+  Divider,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -10,7 +18,13 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { AppNav } from '../src/components/AppNav';
 import { NewEventDialog } from '../src/components/NewEventDialog';
 import { ViewEventDialog } from '../src/components/ViewEventDialog';
-import { BRAND, MOCK_EVENTS, MONTH_NAMES, formatEventDate, AppEvent } from '../src/lib/mockEvents';
+import {
+  BRAND,
+  MOCK_EVENTS,
+  MONTH_NAMES,
+  formatEventDate,
+  type AppEvent,
+} from '../src/lib/mockEvents';
 
 const CANCELLED_RED = '#C62828';
 
@@ -36,16 +50,42 @@ function EventCard({ event, onClick }: { event: AppEvent; onClick: () => void })
       }}
     >
       <CardContent sx={{ pb: '20px !important', pt: 2.5, px: 2.5 }}>
-        <Typography sx={{ color: accentColor, fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: 1.2, mb: 1 }}>
+        <Typography
+          sx={{
+            color: accentColor,
+            fontWeight: 800,
+            fontSize: '0.65rem',
+            textTransform: 'uppercase',
+            letterSpacing: 1.2,
+            mb: 1,
+          }}
+        >
           {cancelled ? `CANCELLED · ${event.type}` : event.type}
         </Typography>
-        <Typography sx={{ fontWeight: 700, color: cancelled ? CANCELLED_RED : BRAND.navy, fontSize: '1.4rem', lineHeight: 1.1, mb: 0.5, textDecoration: cancelled ? 'line-through' : 'none' }}>
+        <Typography
+          sx={{
+            fontWeight: 700,
+            color: cancelled ? CANCELLED_RED : BRAND.navy,
+            fontSize: '1.4rem',
+            lineHeight: 1.1,
+            mb: 0.5,
+            textDecoration: cancelled ? 'line-through' : 'none',
+          }}
+        >
           {formatEventDate(event)}
         </Typography>
         <Typography variant="body2" sx={{ color: '#6B7A8D', mb: 1.75 }}>
           {event.time}
         </Typography>
-        <Typography sx={{ color: '#9AABBD', fontSize: '0.72rem', fontWeight: 500, borderTop: '1px solid #F0F3F6', pt: 1.25 }}>
+        <Typography
+          sx={{
+            color: '#9AABBD',
+            fontSize: '0.72rem',
+            fontWeight: 500,
+            borderTop: '1px solid #F0F3F6',
+            pt: 1.25,
+          }}
+        >
           {event.team}
         </Typography>
       </CardContent>
@@ -53,93 +93,28 @@ function EventCard({ event, onClick }: { event: AppEvent; onClick: () => void })
   );
 }
 
-export default function CalendarPage() {
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+interface DayCellsProps {
+  flexible: boolean;
+  totalCells: number;
+  firstDayOfWeek: number;
+  daysInMonth: number;
+  selectedDay: number | null;
+  eventDayColors: Map<number, string[]>;
+  isToday: (day: number) => boolean;
+  onDayClick: (day: number) => void;
+}
 
-  const [viewYear, setViewYear] = useState(2026);
-  const [viewMonth, setViewMonth] = useState(7);
-  const [events, setEvents] = useState<AppEvent[]>(MOCK_EVENTS);
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
-  const [newEventOpen, setNewEventOpen] = useState(false);
-  const [viewingEvent, setViewingEvent] = useState<AppEvent | null>(null);
-  const [editingEvent, setEditingEvent] = useState<AppEvent | null>(null);
-
-  const handleDelete = (id: number) => {
-    setEvents(prev => prev.filter(e => e.id !== id));
-    setEditingEvent(null);
-  };
-
-  const handleCancelEvent = (id: number) => {
-    setEvents(prev => prev.map(e =>
-      e.id === id ? { ...e, cancelled: true, accentColor: CANCELLED_RED } : e
-    ));
-    setEditingEvent(null);
-  };
-
-  const daysInMonth = useMemo(() => new Date(viewYear, viewMonth + 1, 0).getDate(), [viewYear, viewMonth]);
-  const firstDayOfWeek = useMemo(() => new Date(viewYear, viewMonth, 1).getDay(), [viewYear, viewMonth]);
-  const totalCells = Math.ceil((firstDayOfWeek + daysInMonth) / 7) * 7;
-
-  const monthEvents = useMemo(
-    () => events.filter(e => e.year === viewYear && e.month === viewMonth).sort((a, b) => a.day - b.day),
-    [events, viewYear, viewMonth],
-  );
-
-  // Map of day → accent colors (supports multiple events per day)
-  const eventDayColors = useMemo(() => {
-    const map = new Map<number, string[]>();
-    monthEvents.forEach(e => {
-      map.set(e.day, [...(map.get(e.day) ?? []), e.accentColor]);
-    });
-    return map;
-  }, [monthEvents]);
-
-  const visibleEvents = useMemo(
-    () => selectedDay ? monthEvents.filter(e => e.day === selectedDay) : monthEvents,
-    [monthEvents, selectedDay],
-  );
-
-  const prevMonth = () => {
-    setSelectedDay(null);
-    if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
-    else setViewMonth(m => m - 1);
-  };
-
-  const nextMonth = () => {
-    setSelectedDay(null);
-    if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
-    else setViewMonth(m => m + 1);
-  };
-
-  const isToday = (day: number) =>
-    day === TODAY.getDate() && viewMonth === TODAY.getMonth() && viewYear === TODAY.getFullYear();
-
-  const MonthNav = (
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: { xs: 1, md: 2.5 } }}>
-      <IconButton onClick={prevMonth} size="small" sx={{ color: BRAND.navy }}>
-        <ChevronLeftIcon />
-      </IconButton>
-      <Typography variant="h6" sx={{ fontWeight: 700, color: BRAND.navy }}>
-        {MONTH_NAMES[viewMonth]} {viewYear}
-      </Typography>
-      <IconButton onClick={nextMonth} size="small" sx={{ color: BRAND.navy }}>
-        <ChevronRightIcon />
-      </IconButton>
-    </Box>
-  );
-
-  const DayHeaders = (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', mb: { xs: 0.5, md: 0.75 } }}>
-      {DAY_LABELS.map((d, i) => (
-        <Typography key={i} sx={{ textAlign: 'center', fontSize: '0.7rem', color: '#9AABBD', fontWeight: 600 }}>
-          {d}
-        </Typography>
-      ))}
-    </Box>
-  );
-
-  const DayCells = ({ flexible }: { flexible: boolean }) => (
+function DayCells({
+  flexible,
+  totalCells,
+  firstDayOfWeek,
+  daysInMonth,
+  selectedDay,
+  eventDayColors,
+  isToday,
+  onDayClick,
+}: DayCellsProps) {
+  return (
     <Box
       sx={{
         display: 'grid',
@@ -158,7 +133,7 @@ export default function CalendarPage() {
         return (
           <Box
             key={i}
-            onClick={() => valid && setSelectedDay(d => d === day ? null : day)}
+            onClick={() => valid && onDayClick(day)}
             sx={{
               ...(!flexible ? { aspectRatio: '1' } : {}),
               display: 'flex',
@@ -191,11 +166,23 @@ export default function CalendarPage() {
                     {(colors.length > 3 ? colors.slice(0, 2) : colors).map((color, idx) => (
                       <Box
                         key={idx}
-                        sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: selected ? '#fff' : color }}
+                        sx={{
+                          width: 7,
+                          height: 7,
+                          borderRadius: '50%',
+                          bgcolor: selected ? '#fff' : color,
+                        }}
                       />
                     ))}
                     {colors.length > 3 && (
-                      <Typography sx={{ fontSize: '0.6rem', lineHeight: 1, color: selected ? '#fff' : '#9AABBD', ml: '1px' }}>
+                      <Typography
+                        sx={{
+                          fontSize: '0.6rem',
+                          lineHeight: 1,
+                          color: selected ? '#fff' : '#9AABBD',
+                          ml: '1px',
+                        }}
+                      >
                         …
                       </Typography>
                     )}
@@ -208,6 +195,118 @@ export default function CalendarPage() {
       })}
     </Box>
   );
+}
+
+export default function CalendarPage() {
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+
+  const [viewYear, setViewYear] = useState(2026);
+  const [viewMonth, setViewMonth] = useState(7);
+  const [events, setEvents] = useState<AppEvent[]>(MOCK_EVENTS);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [newEventOpen, setNewEventOpen] = useState(false);
+  const [viewingEvent, setViewingEvent] = useState<AppEvent | null>(null);
+  const [editingEvent, setEditingEvent] = useState<AppEvent | null>(null);
+
+  const handleDelete = (id: number) => {
+    setEvents((prev) => prev.filter((e) => e.id !== id));
+    setEditingEvent(null);
+  };
+
+  const handleCancelEvent = (id: number) => {
+    setEvents((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, cancelled: true, accentColor: CANCELLED_RED } : e))
+    );
+    setEditingEvent(null);
+  };
+
+  const daysInMonth = useMemo(
+    () => new Date(viewYear, viewMonth + 1, 0).getDate(),
+    [viewYear, viewMonth]
+  );
+  const firstDayOfWeek = useMemo(
+    () => new Date(viewYear, viewMonth, 1).getDay(),
+    [viewYear, viewMonth]
+  );
+  const totalCells = Math.ceil((firstDayOfWeek + daysInMonth) / 7) * 7;
+
+  const monthEvents = useMemo(
+    () =>
+      events
+        .filter((e) => e.year === viewYear && e.month === viewMonth)
+        .sort((a, b) => a.day - b.day),
+    [events, viewYear, viewMonth]
+  );
+
+  // Map of day → accent colors (supports multiple events per day)
+  const eventDayColors = useMemo(() => {
+    const map = new Map<number, string[]>();
+    monthEvents.forEach((e) => {
+      map.set(e.day, [...(map.get(e.day) ?? []), e.accentColor]);
+    });
+    return map;
+  }, [monthEvents]);
+
+  const visibleEvents = useMemo(
+    () => (selectedDay ? monthEvents.filter((e) => e.day === selectedDay) : monthEvents),
+    [monthEvents, selectedDay]
+  );
+
+  const prevMonth = () => {
+    setSelectedDay(null);
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear((y) => y - 1);
+    } else setViewMonth((m) => m - 1);
+  };
+
+  const nextMonth = () => {
+    setSelectedDay(null);
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear((y) => y + 1);
+    } else setViewMonth((m) => m + 1);
+  };
+
+  const isToday = (day: number) =>
+    day === TODAY.getDate() && viewMonth === TODAY.getMonth() && viewYear === TODAY.getFullYear();
+
+  const MonthNav = (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        mb: { xs: 1, md: 2.5 },
+      }}
+    >
+      <IconButton onClick={prevMonth} size="small" sx={{ color: BRAND.navy }}>
+        <ChevronLeftIcon />
+      </IconButton>
+      <Typography variant="h6" sx={{ fontWeight: 700, color: BRAND.navy }}>
+        {MONTH_NAMES[viewMonth]} {viewYear}
+      </Typography>
+      <IconButton onClick={nextMonth} size="small" sx={{ color: BRAND.navy }}>
+        <ChevronRightIcon />
+      </IconButton>
+    </Box>
+  );
+
+  const DayHeaders = (
+    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', mb: { xs: 0.5, md: 0.75 } }}>
+      {DAY_LABELS.map((d, i) => (
+        <Typography
+          key={i}
+          sx={{ textAlign: 'center', fontSize: '0.7rem', color: '#9AABBD', fontWeight: 600 }}
+        >
+          {d}
+        </Typography>
+      ))}
+    </Box>
+  );
+
+  const handleDayClick = (day: number) => setSelectedDay((d) => (d === day ? null : day));
 
   const EventList = (
     <>
@@ -218,7 +317,16 @@ export default function CalendarPage() {
             {selectedDay ? `${MONTH_NAMES[viewMonth].slice(0, 3)} ${selectedDay}` : 'All Events'}
           </Typography>
         </Box>
-        <Fab size="small" onClick={() => setNewEventOpen(true)} sx={{ bgcolor: BRAND.navy, color: '#fff', boxShadow: 2, '&:hover': { bgcolor: '#112C56' } }}>
+        <Fab
+          size="small"
+          onClick={() => setNewEventOpen(true)}
+          sx={{
+            bgcolor: BRAND.navy,
+            color: '#fff',
+            boxShadow: 2,
+            '&:hover': { bgcolor: '#112C56' },
+          }}
+        >
           <AddIcon />
         </Fab>
       </Box>
@@ -228,44 +336,72 @@ export default function CalendarPage() {
             No events {selectedDay ? 'on this day' : 'this month'}
           </Typography>
         ) : (
-          visibleEvents.map(event => <EventCard key={event.id} event={event} onClick={() => setViewingEvent(event)} />)
+          visibleEvents.map((event) => (
+            <EventCard key={event.id} event={event} onClick={() => setViewingEvent(event)} />
+          ))
         )}
       </Box>
     </>
   );
 
   return (
-    <Box sx={{ bgcolor: '#fff', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <Box
+      sx={{
+        bgcolor: '#fff',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
       <AppNav current="calendar" />
 
       {isDesktop ? (
         /* ── DESKTOP: side-by-side ── */
         <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-          <Box sx={{ width: '52%', borderRight: '1px solid #E0E6ED', px: 5, py: 4, overflowY: 'auto' }}>
+          <Box
+            sx={{ width: '52%', borderRight: '1px solid #E0E6ED', px: 5, py: 4, overflowY: 'auto' }}
+          >
             {MonthNav}
             {DayHeaders}
-            <DayCells flexible={false} />
+            <DayCells
+              flexible={false}
+              totalCells={totalCells}
+              firstDayOfWeek={firstDayOfWeek}
+              daysInMonth={daysInMonth}
+              selectedDay={selectedDay}
+              eventDayColors={eventDayColors}
+              isToday={isToday}
+              onDayClick={handleDayClick}
+            />
           </Box>
-          <Box sx={{ flex: 1, px: 4, py: 4, overflowY: 'auto' }}>
-            {EventList}
-          </Box>
+          <Box sx={{ flex: 1, px: 4, py: 4, overflowY: 'auto' }}>{EventList}</Box>
         </Box>
       ) : (
         /* ── MOBILE: fixed 50/50 split ── */
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {/* Top half: calendar fills exactly 50% */}
-          <Box sx={{ height: '50%', display: 'flex', flexDirection: 'column', px: 2, pt: 2, pb: 1 }}>
+          <Box
+            sx={{ height: '50%', display: 'flex', flexDirection: 'column', px: 2, pt: 2, pb: 1 }}
+          >
             {MonthNav}
             {DayHeaders}
-            <DayCells flexible />
+            <DayCells
+              flexible
+              totalCells={totalCells}
+              firstDayOfWeek={firstDayOfWeek}
+              daysInMonth={daysInMonth}
+              selectedDay={selectedDay}
+              eventDayColors={eventDayColors}
+              isToday={isToday}
+              onDayClick={handleDayClick}
+            />
           </Box>
 
           <Divider />
 
           {/* Bottom half: events scroll independently */}
-          <Box sx={{ flex: 1, overflowY: 'auto', px: 2, pt: 2, pb: '76px' }}>
-            {EventList}
-          </Box>
+          <Box sx={{ flex: 1, overflowY: 'auto', px: 2, pt: 2, pb: '76px' }}>{EventList}</Box>
         </Box>
       )}
       {/* Create new event */}
@@ -283,7 +419,10 @@ export default function CalendarPage() {
       <ViewEventDialog
         event={viewingEvent}
         onClose={() => setViewingEvent(null)}
-        onEdit={event => { setViewingEvent(null); setEditingEvent(event); }}
+        onEdit={(event) => {
+          setViewingEvent(null);
+          setEditingEvent(event);
+        }}
       />
 
       {/* Edit event */}

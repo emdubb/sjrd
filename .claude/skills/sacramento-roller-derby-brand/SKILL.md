@@ -1,6 +1,6 @@
 ---
 name: sacramento-roller-derby-brand
-description: "Brand guide skill for Sacramento Junior Roller Derby styling, layout, and component design for web interfaces. Use this to produce web components and page sections that match the site’s visual identity."
+description: 'Brand guide skill for Sacramento Junior Roller Derby styling, layout, and component design for web interfaces. Use this to produce web components and page sections that match the site’s visual identity.'
 ---
 
 # Sacramento Junior Roller Derby Brand Guide

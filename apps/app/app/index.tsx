@@ -1,19 +1,13 @@
 import { useMemo } from 'react';
-import {
-  Typography, Box, Paper, Card, CardContent,
-  useTheme, useMediaQuery,
-} from '@mui/material';
+import { Typography, Box, Paper, Card, CardContent } from '@mui/material';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { AppNav } from '../src/components/AppNav';
-import { BRAND, MOCK_EVENTS, formatEventDate, upcomingEvents } from '../src/lib/mockEvents';
+import { BRAND, formatEventDate, upcomingEvents } from '../src/lib/mockEvents';
 
 const TODAY = new Date(2026, 7, 27); // Aug 27 2026
 
 export default function Dashboard() {
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
-
   const events = useMemo(() => upcomingEvents(TODAY).slice(0, 3), []);
 
   return (
@@ -59,7 +53,9 @@ export default function Dashboard() {
         {/* Section header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <CalendarTodayIcon sx={{ color: BRAND.navy, fontSize: 22 }} />
-          <Typography variant="h6" sx={{ color: BRAND.navy }}>My Upcoming Events</Typography>
+          <Typography variant="h6" sx={{ color: BRAND.navy }}>
+            My Upcoming Events
+          </Typography>
         </Box>
 
         {/* Event cards */}
@@ -96,7 +92,15 @@ export default function Dashboard() {
                 >
                   {event.type}
                 </Typography>
-                <Typography sx={{ fontWeight: 700, color: BRAND.navy, fontSize: '1.4rem', lineHeight: 1.1, mb: 0.5 }}>
+                <Typography
+                  sx={{
+                    fontWeight: 700,
+                    color: BRAND.navy,
+                    fontSize: '1.4rem',
+                    lineHeight: 1.1,
+                    mb: 0.5,
+                  }}
+                >
                   {formatEventDate(event)}
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#6B7A8D', mb: 1.75 }}>

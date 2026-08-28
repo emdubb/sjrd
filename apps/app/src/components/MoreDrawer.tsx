@@ -1,6 +1,13 @@
 import {
-  Drawer, List, ListItemButton, ListItemIcon, ListItemText,
-  Box, Typography, Divider, Badge,
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Box,
+  Typography,
+  Divider,
+  Badge,
 } from '@mui/material';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
@@ -10,11 +17,11 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import { BRAND } from '../lib/mockEvents';
 
 const ITEMS = [
-  { label: 'Profile',       icon: <PersonOutlineIcon />,      badge: 0 },
-  { label: 'Notifications', icon: <NotificationsNoneIcon />,  badge: 2 },
-  { label: 'Admin',         icon: <AdminPanelSettingsIcon />, badge: 0 },
-  { label: 'Eligibility',   icon: <VerifiedOutlinedIcon />,   badge: 0 },
-  { label: 'References',    icon: <MenuBookIcon />,           badge: 0 },
+  { label: 'Profile', icon: <PersonOutlineIcon />, badge: 0 },
+  { label: 'Notifications', icon: <NotificationsNoneIcon />, badge: 2 },
+  { label: 'Admin', icon: <AdminPanelSettingsIcon />, badge: 0 },
+  { label: 'Eligibility', icon: <VerifiedOutlinedIcon />, badge: 0 },
+  { label: 'References', icon: <MenuBookIcon />, badge: 0 },
 ];
 
 interface Props {
@@ -68,8 +75,12 @@ export function MoreDrawer({ open, onClose, anchor = 'bottom' }: Props) {
           >
             <ListItemIcon sx={{ minWidth: 40, color: BRAND.navy }}>
               {badge > 0 ? (
-                <Badge badgeContent={badge} color="error">{icon}</Badge>
-              ) : icon}
+                <Badge badgeContent={badge} color="error">
+                  {icon}
+                </Badge>
+              ) : (
+                icon
+              )}
             </ListItemIcon>
             <ListItemText
               primary={label}

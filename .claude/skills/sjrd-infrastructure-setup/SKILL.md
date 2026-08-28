@@ -1,11 +1,12 @@
 ---
 name: sjrd-infrastructure-setup
-description: "Infrastructure setup and deployment guidance for the Sacramento Junior Roller Derby monorepo. Use this skill to scaffold local development, hosting, and deployment files for the web landing site, Expo app, and Supabase backend."
+description: 'Infrastructure setup and deployment guidance for the Sacramento Junior Roller Derby monorepo. Use this skill to scaffold local development, hosting, and deployment files for the web landing site, Expo app, and Supabase backend.'
 ---
 
 # SJRD Infrastructure Setup
 
 This skill defines the infrastructure and file scaffolding needed to support:
+
 - `apps/web`: public landing site (Next.js)
 - `apps/app`: authenticated app shell / splash page (Expo Router Web)
 - `packages/backend`: shared backend schema and seed data files for Supabase

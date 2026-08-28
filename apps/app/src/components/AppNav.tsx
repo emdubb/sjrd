@@ -1,11 +1,18 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import {
-  AppBar, Toolbar, Box, IconButton, Badge,
-  Tab, Tabs, BottomNavigation, BottomNavigationAction,
-  useTheme, useMediaQuery,
+  AppBar,
+  Toolbar,
+  Box,
+  IconButton,
+  Badge,
+  Tab,
+  Tabs,
+  BottomNavigation,
+  BottomNavigationAction,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import HomeIcon from '@mui/icons-material/Home';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import SportsIcon from '@mui/icons-material/Sports';
@@ -33,46 +40,49 @@ export function AppNav({ current }: { current: NavRoute }) {
       setMoreOpen(true);
     } else {
       const path = TAB_TO_ROUTE[v];
-      if (path) router.replace(path as any);
+      if (path) router.replace(path as `/${string}`);
     }
   };
 
   if (isDesktop) {
     return (
       <>
-      <AppBar position="static" elevation={0} sx={{ bgcolor: BRAND.navy }}>
-        <Toolbar sx={{ gap: 0 }}>
-          <Tabs
-            value={tabIndex}
-            onChange={(_, v) => { const p = TAB_TO_ROUTE[v]; if (p) router.replace(p as any); }}
-            sx={{
-              '& .MuiTab-root': {
-                color: '#FFFFFF',
-                textTransform: 'none',
-                fontSize: '0.95rem',
-                minWidth: 0,
-                px: 2.5,
-                opacity: 1,
-              },
-              '& .MuiTab-root.Mui-selected': { color: BRAND.gold },
-              '& .MuiTabs-indicator': { backgroundColor: BRAND.gold, height: 3 },
-            }}
-          >
-            <Tab label="Home" />
-            <Tab label="Calendar" />
-            <Tab label="Coaching" />
-          </Tabs>
-          <Box sx={{ flex: 1 }} />
-          <IconButton onClick={() => setMoreOpen(true)} sx={{ color: '#fff' }}>
-            <Badge variant="dot" color="error">
-              <MenuIcon />
-            </Badge>
-          </IconButton>
-        </Toolbar>
-      </AppBar>
+        <AppBar position="static" elevation={0} sx={{ bgcolor: BRAND.navy }}>
+          <Toolbar sx={{ gap: 0 }}>
+            <Tabs
+              value={tabIndex}
+              onChange={(_, v) => {
+                const p = TAB_TO_ROUTE[v];
+                if (p) router.replace(p as `/${string}`);
+              }}
+              sx={{
+                '& .MuiTab-root': {
+                  color: '#FFFFFF',
+                  textTransform: 'none',
+                  fontSize: '0.95rem',
+                  minWidth: 0,
+                  px: 2.5,
+                  opacity: 1,
+                },
+                '& .MuiTab-root.Mui-selected': { color: BRAND.gold },
+                '& .MuiTabs-indicator': { backgroundColor: BRAND.gold, height: 3 },
+              }}
+            >
+              <Tab label="Home" />
+              <Tab label="Calendar" />
+              <Tab label="Coaching" />
+            </Tabs>
+            <Box sx={{ flex: 1 }} />
+            <IconButton onClick={() => setMoreOpen(true)} sx={{ color: '#fff' }}>
+              <Badge variant="dot" color="error">
+                <MenuIcon />
+              </Badge>
+            </IconButton>
+          </Toolbar>
+        </AppBar>
 
-      <MoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} anchor="right" />
-    </>
+        <MoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} anchor="right" />
+      </>
     );
   }
 
@@ -101,7 +111,11 @@ export function AppNav({ current }: { current: NavRoute }) {
         <BottomNavigationAction label="Coaching" icon={<SportsIcon />} />
         <BottomNavigationAction
           label="More"
-          icon={<Badge badgeContent={2} color="error"><MoreHorizIcon /></Badge>}
+          icon={
+            <Badge badgeContent={2} color="error">
+              <MoreHorizIcon />
+            </Badge>
+          }
         />
       </BottomNavigation>
 

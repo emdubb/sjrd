@@ -1,14 +1,28 @@
+/* eslint-disable max-lines, max-lines-per-function -- TODO: extract form sections into sub-components */
 import { useState, useMemo, useEffect } from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Select, MenuItem, FormControl, InputLabel,
-  Typography, Box, Button, IconButton, Chip,
-  InputAdornment, useTheme, useMediaQuery,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Typography,
+  Box,
+  Button,
+  IconButton,
+  Chip,
+  InputAdornment,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { AppEvent, BRAND } from '../lib/mockEvents';
+import { BRAND, type AppEvent } from '../lib/mockEvents';
 
 const TYPES = ['Practice', 'Game', 'Scrimmage', 'Other'];
 const TEAMS = ['Team 1', 'Team 2'];
@@ -19,12 +33,22 @@ const DEFAULT_LOCATION = '1701 Thorton Ave, Sacramento CA 95811';
 const nth = (n: number) => {
   if (n > 3 && n < 21) return 'th';
   switch (n % 10) {
-    case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th';
+    case 1:
+      return 'st';
+    case 2:
+      return 'nd';
+    case 3:
+      return 'rd';
+    default:
+      return 'th';
   }
 };
 
 const parseTeams = (team: string): string[] =>
-  team.split(/\s*&\s*/).map(t => t.trim()).filter(t => TEAMS.includes(t));
+  team
+    .split(/\s*&\s*/)
+    .map((t) => t.trim())
+    .filter((t) => TEAMS.includes(t));
 
 const pillChipSx = (selected: boolean) => ({
   borderRadius: '50px',
@@ -48,7 +72,14 @@ interface Props {
   onCancelEvent?: () => void;
 }
 
-export function NewEventDialog({ open, onClose, defaultDate, editEvent, onDelete, onCancelEvent }: Props) {
+export function NewEventDialog({
+  open,
+  onClose,
+  defaultDate,
+  editEvent,
+  onDelete,
+  onCancelEvent,
+}: Props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isEditMode = !!editEvent;
@@ -64,7 +95,9 @@ export function NewEventDialog({ open, onClose, defaultDate, editEvent, onDelete
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState(DEFAULT_LOCATION);
 
-  // Pre-fill form when opening in edit mode
+  // Pre-fill form when opening in edit mode. Multiple setState calls are intentional
+  // to reset all fields atomically; the `key` prop on the parent resets state on mount.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (editEvent) {
       setTitle(editEvent.title ?? '');
@@ -91,10 +124,11 @@ export function NewEventDialog({ open, onClose, defaultDate, editEvent, onDelete
       setDescription('');
       setLocation(DEFAULT_LOCATION);
     }
-  }, [editEvent, open]);
+  }, [editEvent, open]); // eslint-disable-line react-hooks/exhaustive-deps
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const toggleTeam = (team: string) =>
-    setTeams(prev => prev.includes(team) ? prev.filter(t => t !== team) : [...prev, team]);
+    setTeams((prev) => (prev.includes(team) ? prev.filter((t) => t !== team) : [...prev, team]));
 
   const { monthlyDateLabel, monthlyWeekdayLabel } = useMemo(() => {
     const [y, m, d] = date.split('-').map(Number);
@@ -130,7 +164,9 @@ export function NewEventDialog({ open, onClose, defaultDate, editEvent, onDelete
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          px: 3, pt: 3, pb: 1,
+          px: 3,
+          pt: 3,
+          pb: 1,
           fontWeight: 700,
           fontSize: '1.25rem',
           color: BRAND.navy,
@@ -143,12 +179,13 @@ export function NewEventDialog({ open, onClose, defaultDate, editEvent, onDelete
       </DialogTitle>
 
       {/* ── FIELDS ── */}
-      <DialogContent sx={{ px: 3, pt: 2, pb: 1, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-
+      <DialogContent
+        sx={{ px: 3, pt: 2, pb: 1, display: 'flex', flexDirection: 'column', gap: 2.5 }}
+      >
         <TextField
           placeholder="Title"
           value={title}
-          onChange={e => setTitle(e.target.value)}
+          onChange={(e) => setTitle(e.target.value)}
           variant="outlined"
           fullWidth
           sx={fieldSx}
@@ -159,13 +196,20 @@ export function NewEventDialog({ open, onClose, defaultDate, editEvent, onDelete
           label="Date"
           type="date"
           value={date}
-          onChange={e => { setDate(e.target.value); setMonthlyMode('date'); }}
+          onChange={(e) => {
+            setDate(e.target.value);
+            setMonthlyMode('date');
+          }}
           variant="outlined"
           fullWidth
           sx={{
             ...fieldSx,
             '& input[type=date]::-webkit-calendar-picker-indicator': {
-              opacity: 0, position: 'absolute', right: 0, width: '100%', cursor: 'pointer',
+              opacity: 0,
+              position: 'absolute',
+              right: 0,
+              width: '100%',
+              cursor: 'pointer',
             },
           }}
           InputProps={{
@@ -181,16 +225,26 @@ export function NewEventDialog({ open, onClose, defaultDate, editEvent, onDelete
 
         <Box sx={{ display: 'flex', gap: 1.5 }}>
           <TextField
-            label="Start time" type="time" value={startTime}
-            onChange={e => setStartTime(e.target.value)}
-            variant="outlined" fullWidth sx={fieldSx}
-            InputProps={{ sx: { borderRadius: 2 } }} InputLabelProps={{ shrink: true }}
+            label="Start time"
+            type="time"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+            variant="outlined"
+            fullWidth
+            sx={fieldSx}
+            InputProps={{ sx: { borderRadius: 2 } }}
+            InputLabelProps={{ shrink: true }}
           />
           <TextField
-            label="End time" type="time" value={endTime}
-            onChange={e => setEndTime(e.target.value)}
-            variant="outlined" fullWidth sx={fieldSx}
-            InputProps={{ sx: { borderRadius: 2 } }} InputLabelProps={{ shrink: true }}
+            label="End time"
+            type="time"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+            variant="outlined"
+            fullWidth
+            sx={fieldSx}
+            InputProps={{ sx: { borderRadius: 2 } }}
+            InputLabelProps={{ shrink: true }}
           />
         </Box>
 
@@ -199,8 +253,12 @@ export function NewEventDialog({ open, onClose, defaultDate, editEvent, onDelete
             <InputLabel>Recurrence</InputLabel>
             <Select
               value={recurrence}
-              onChange={e => { setRecurrence(e.target.value); setMonthlyMode('date'); }}
-              label="Recurrence" sx={{ borderRadius: 2 }}
+              onChange={(e) => {
+                setRecurrence(e.target.value);
+                setMonthlyMode('date');
+              }}
+              label="Recurrence"
+              sx={{ borderRadius: 2 }}
             >
               <MenuItem value="none">Does not repeat</MenuItem>
               <MenuItem value="daily">Daily</MenuItem>
@@ -210,26 +268,48 @@ export function NewEventDialog({ open, onClose, defaultDate, editEvent, onDelete
           </FormControl>
           {recurrence === 'monthly' && (
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', pl: 0.5 }}>
-              <Chip label={monthlyDateLabel} onClick={() => setMonthlyMode('date')} sx={pillChipSx(monthlyMode === 'date')} />
-              <Chip label={monthlyWeekdayLabel} onClick={() => setMonthlyMode('weekday')} sx={pillChipSx(monthlyMode === 'weekday')} />
+              <Chip
+                label={monthlyDateLabel}
+                onClick={() => setMonthlyMode('date')}
+                sx={pillChipSx(monthlyMode === 'date')}
+              />
+              <Chip
+                label={monthlyWeekdayLabel}
+                onClick={() => setMonthlyMode('weekday')}
+                sx={pillChipSx(monthlyMode === 'weekday')}
+              />
             </Box>
           )}
         </Box>
 
         <Box>
-          <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: BRAND.navy, mb: 1 }}>Type</Typography>
+          <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: BRAND.navy, mb: 1 }}>
+            Type
+          </Typography>
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            {TYPES.map(t => (
-              <Chip key={t} label={t} onClick={() => setEventType(t)} sx={pillChipSx(eventType === t)} />
+            {TYPES.map((t) => (
+              <Chip
+                key={t}
+                label={t}
+                onClick={() => setEventType(t)}
+                sx={pillChipSx(eventType === t)}
+              />
             ))}
           </Box>
         </Box>
 
         <Box>
-          <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: BRAND.navy, mb: 1 }}>Team(s)</Typography>
+          <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: BRAND.navy, mb: 1 }}>
+            Team(s)
+          </Typography>
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            {TEAMS.map(t => (
-              <Chip key={t} label={t} onClick={() => toggleTeam(t)} sx={pillChipSx(teams.includes(t))} />
+            {TEAMS.map((t) => (
+              <Chip
+                key={t}
+                label={t}
+                onClick={() => toggleTeam(t)}
+                sx={pillChipSx(teams.includes(t))}
+              />
             ))}
           </Box>
         </Box>
@@ -237,8 +317,10 @@ export function NewEventDialog({ open, onClose, defaultDate, editEvent, onDelete
         <TextField
           label="Location"
           value={location}
-          onChange={e => setLocation(e.target.value)}
-          variant="outlined" fullWidth sx={fieldSx}
+          onChange={(e) => setLocation(e.target.value)}
+          variant="outlined"
+          fullWidth
+          sx={fieldSx}
           InputProps={{
             sx: { borderRadius: 2 },
             startAdornment: (
@@ -253,21 +335,32 @@ export function NewEventDialog({ open, onClose, defaultDate, editEvent, onDelete
         <TextField
           placeholder="Description (optional)"
           value={description}
-          onChange={e => setDescription(e.target.value)}
-          variant="outlined" fullWidth multiline minRows={3} sx={fieldSx}
+          onChange={(e) => setDescription(e.target.value)}
+          variant="outlined"
+          fullWidth
+          multiline
+          minRows={3}
+          sx={fieldSx}
           InputProps={{ sx: { borderRadius: 2 } }}
         />
-
       </DialogContent>
 
       {/* ── ACTIONS ── */}
-      <DialogActions sx={{ px: 3, pt: 1.5, pb: isMobile ? 3 : 2.5, flexDirection: 'column', gap: 1 }}>
+      <DialogActions
+        sx={{ px: 3, pt: 1.5, pb: isMobile ? 3 : 2.5, flexDirection: 'column', gap: 1 }}
+      >
         <Button
           onClick={onClose}
-          fullWidth variant="contained" disableElevation
+          fullWidth
+          variant="contained"
+          disableElevation
           sx={{
-            bgcolor: BRAND.navy, color: '#fff', borderRadius: 2,
-            py: 1.5, fontSize: '1rem', fontWeight: 700,
+            bgcolor: BRAND.navy,
+            color: '#fff',
+            borderRadius: 2,
+            py: 1.5,
+            fontSize: '1rem',
+            fontWeight: 700,
             '&:hover': { bgcolor: '#112C56' },
           }}
         >
@@ -278,10 +371,15 @@ export function NewEventDialog({ open, onClose, defaultDate, editEvent, onDelete
           <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
             <Button
               onClick={onCancelEvent}
-              fullWidth variant="outlined" size="small"
+              fullWidth
+              variant="outlined"
+              size="small"
               sx={{
-                borderColor: '#E65100', color: '#E65100', borderRadius: 2,
-                textTransform: 'none', fontWeight: 600,
+                borderColor: '#E65100',
+                color: '#E65100',
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 600,
                 '&:hover': { bgcolor: '#FFF3E0', borderColor: '#E65100' },
               }}
             >
@@ -289,10 +387,15 @@ export function NewEventDialog({ open, onClose, defaultDate, editEvent, onDelete
             </Button>
             <Button
               onClick={onDelete}
-              fullWidth variant="outlined" size="small"
+              fullWidth
+              variant="outlined"
+              size="small"
               sx={{
-                borderColor: '#C62828', color: '#C62828', borderRadius: 2,
-                textTransform: 'none', fontWeight: 600,
+                borderColor: '#C62828',
+                color: '#C62828',
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 600,
                 '&:hover': { bgcolor: '#FFEBEE', borderColor: '#C62828' },
               }}
             >
