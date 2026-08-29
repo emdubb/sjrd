@@ -1,97 +1,37 @@
 /* eslint-disable max-lines -- TODO: extract DayCells, EventCard, and event list into separate files */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
   IconButton,
-  Card,
-  CardContent,
   Fab,
   Divider,
+  Button,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import AddIcon from '@mui/icons-material/Add';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { AppNav } from '../src/components/AppNav';
-import { NewEventDialog } from '../src/components/NewEventDialog';
-import { ViewEventDialog } from '../src/components/ViewEventDialog';
+import { EventCard } from '../src/components/EventCard';
+import { NewEventDrawer } from '../src/components/NewEventDrawer';
+import { EventDrawer } from '../src/components/EventDrawer';
+import { BRAND, MONTH_NAMES } from '../src/lib/brand';
 import {
-  BRAND,
-  MOCK_EVENTS,
-  MONTH_NAMES,
-  formatEventDate,
+  fetchEventsForMonth,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  cancelEvent,
+  CANCELLED_COLOR,
   type AppEvent,
-} from '../src/lib/mockEvents';
-
-const CANCELLED_RED = '#C62828';
+  type EventFormData,
+  type PagedEvents,
+} from '../src/lib/events';
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-const TODAY = new Date(2026, 7, 27);
-
-function EventCard({ event, onClick }: { event: AppEvent; onClick: () => void }) {
-  const cancelled = !!event.cancelled;
-  const accentColor = cancelled ? CANCELLED_RED : event.accentColor;
-
-  return (
-    <Card
-      elevation={0}
-      onClick={onClick}
-      sx={{
-        border: `1px solid ${cancelled ? '#FFCDD2' : '#E0E6ED'}`,
-        borderLeft: `4px solid ${accentColor}`,
-        bgcolor: cancelled ? '#FFF8F8' : '#fff',
-        borderRadius: 2,
-        cursor: 'pointer',
-        transition: 'box-shadow 0.15s',
-        '&:hover': { boxShadow: '0 2px 12px rgba(0,0,0,0.08)' },
-      }}
-    >
-      <CardContent sx={{ pb: '20px !important', pt: 2.5, px: 2.5 }}>
-        <Typography
-          sx={{
-            color: accentColor,
-            fontWeight: 800,
-            fontSize: '0.65rem',
-            textTransform: 'uppercase',
-            letterSpacing: 1.2,
-            mb: 1,
-          }}
-        >
-          {cancelled ? `CANCELLED · ${event.type}` : event.type}
-        </Typography>
-        <Typography
-          sx={{
-            fontWeight: 700,
-            color: cancelled ? CANCELLED_RED : BRAND.navy,
-            fontSize: '1.4rem',
-            lineHeight: 1.1,
-            mb: 0.5,
-            textDecoration: cancelled ? 'line-through' : 'none',
-          }}
-        >
-          {formatEventDate(event)}
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#6B7A8D', mb: 1.75 }}>
-          {event.time}
-        </Typography>
-        <Typography
-          sx={{
-            color: '#9AABBD',
-            fontSize: '0.72rem',
-            fontWeight: 500,
-            borderTop: '1px solid #F0F3F6',
-            pt: 1.25,
-          }}
-        >
-          {event.team}
-        </Typography>
-      </CardContent>
-    </Card>
-  );
-}
+const TODAY = new Date();
 
 interface DayCellsProps {
   flexible: boolean;
@@ -201,24 +141,60 @@ export default function CalendarPage() {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
-  const [viewYear, setViewYear] = useState(2026);
-  const [viewMonth, setViewMonth] = useState(7);
-  const [events, setEvents] = useState<AppEvent[]>(MOCK_EVENTS);
+  const [viewYear, setViewYear] = useState(TODAY.getFullYear());
+  const [viewMonth, setViewMonth] = useState(TODAY.getMonth());
+  const [events, setEvents] = useState<AppEvent[]>([]);
+  const [eventOffset, setEventOffset] = useState(0);
+  const [hasMoreEvents, setHasMoreEvents] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [newEventOpen, setNewEventOpen] = useState(false);
-  const [viewingEvent, setViewingEvent] = useState<AppEvent | null>(null);
-  const [editingEvent, setEditingEvent] = useState<AppEvent | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<AppEvent | null>(null);
 
-  const handleDelete = (id: number) => {
-    setEvents((prev) => prev.filter((e) => e.id !== id));
-    setEditingEvent(null);
+  const loadEvents = useCallback(
+    async (offset = 0, append = false) => {
+      try {
+        const { events: newEvents, hasMore }: PagedEvents = await fetchEventsForMonth(
+          viewYear,
+          viewMonth,
+          offset
+        );
+        setEvents((prev) => (append ? [...prev, ...newEvents] : newEvents));
+        setEventOffset(offset + newEvents.length);
+        setHasMoreEvents(hasMore);
+      } catch {
+        // silently ignore — empty calendar is better than a crash
+      }
+    },
+    [viewYear, viewMonth]
+  );
+
+  useEffect(() => {
+    setEventOffset(0);
+    loadEvents(0, false);
+  }, [loadEvents]);
+
+  const handleSave = async (data: EventFormData) => {
+    await createEvent(data);
+    await loadEvents(0, false);
   };
 
-  const handleCancelEvent = (id: number) => {
+  const handleUpdate = async (id: string, data: EventFormData) => {
+    await updateEvent(id, data);
+    await loadEvents(0, false);
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteEvent(id);
+    setEvents((prev) => prev.filter((e) => e.id !== id));
+    setSelectedEvent(null);
+  };
+
+  const handleCancelEvent = async (id: string) => {
+    await cancelEvent(id);
     setEvents((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, cancelled: true, accentColor: CANCELLED_RED } : e))
+      prev.map((e) => (e.id === id ? { ...e, cancelled: true, accentColor: CANCELLED_COLOR } : e))
     );
-    setEditingEvent(null);
+    setSelectedEvent(null);
   };
 
   const daysInMonth = useMemo(
@@ -239,7 +215,6 @@ export default function CalendarPage() {
     [events, viewYear, viewMonth]
   );
 
-  // Map of day → accent colors (supports multiple events per day)
   const eventDayColors = useMemo(() => {
     const map = new Map<number, string[]>();
     monthEvents.forEach((e) => {
@@ -310,26 +285,6 @@ export default function CalendarPage() {
 
   const EventList = (
     <>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CalendarTodayIcon sx={{ color: BRAND.navy, fontSize: 22 }} />
-          <Typography variant="h6" sx={{ color: BRAND.navy }}>
-            {selectedDay ? `${MONTH_NAMES[viewMonth].slice(0, 3)} ${selectedDay}` : 'All Events'}
-          </Typography>
-        </Box>
-        <Fab
-          size="small"
-          onClick={() => setNewEventOpen(true)}
-          sx={{
-            bgcolor: BRAND.navy,
-            color: '#fff',
-            boxShadow: 2,
-            '&:hover': { bgcolor: '#112C56' },
-          }}
-        >
-          <AddIcon />
-        </Fab>
-      </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {visibleEvents.length === 0 ? (
           <Typography variant="body2" sx={{ color: '#9AABBD', textAlign: 'center', py: 6 }}>
@@ -337,10 +292,18 @@ export default function CalendarPage() {
           </Typography>
         ) : (
           visibleEvents.map((event) => (
-            <EventCard key={event.id} event={event} onClick={() => setViewingEvent(event)} />
+            <EventCard key={event.id} event={event} onClick={() => setSelectedEvent(event)} />
           ))
         )}
       </Box>
+      {!selectedDay && hasMoreEvents && (
+        <Button
+          onClick={() => loadEvents(eventOffset, true)}
+          sx={{ mt: 1, color: BRAND.navy, textTransform: 'none', fontWeight: 600 }}
+        >
+          Load more
+        </Button>
+      )}
     </>
   );
 
@@ -380,7 +343,6 @@ export default function CalendarPage() {
       ) : (
         /* ── MOBILE: fixed 50/50 split ── */
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          {/* Top half: calendar fills exactly 50% */}
           <Box
             sx={{ height: '50%', display: 'flex', flexDirection: 'column', px: 2, pt: 2, pb: 1 }}
           >
@@ -400,14 +362,31 @@ export default function CalendarPage() {
 
           <Divider />
 
-          {/* Bottom half: events scroll independently */}
           <Box sx={{ flex: 1, overflowY: 'auto', px: 2, pt: 2, pb: '76px' }}>{EventList}</Box>
         </Box>
       )}
+
+      {/* Add event FAB */}
+      <Fab
+        onClick={() => setNewEventOpen(true)}
+        sx={{
+          position: 'fixed',
+          bottom: { xs: 80, md: 32 },
+          right: { xs: 20, md: 32 },
+          bgcolor: BRAND.navy,
+          color: '#fff',
+          boxShadow: 3,
+          '&:hover': { bgcolor: '#112C56' },
+        }}
+      >
+        <AddIcon />
+      </Fab>
+
       {/* Create new event */}
-      <NewEventDialog
+      <NewEventDrawer
         open={newEventOpen}
         onClose={() => setNewEventOpen(false)}
+        onSave={handleSave}
         defaultDate={
           selectedDay
             ? `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`
@@ -415,24 +394,13 @@ export default function CalendarPage() {
         }
       />
 
-      {/* View event */}
-      <ViewEventDialog
-        event={viewingEvent}
-        onClose={() => setViewingEvent(null)}
-        onEdit={(event) => {
-          setViewingEvent(null);
-          setEditingEvent(event);
-        }}
-      />
-
-      {/* Edit event */}
-      <NewEventDialog
-        key={editingEvent?.id}
-        open={!!editingEvent}
-        onClose={() => setEditingEvent(null)}
-        editEvent={editingEvent ?? undefined}
-        onDelete={() => editingEvent && handleDelete(editingEvent.id)}
-        onCancelEvent={() => editingEvent && handleCancelEvent(editingEvent.id)}
+      {/* View / edit event */}
+      <EventDrawer
+        event={selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+        onSave={(data) => handleUpdate(selectedEvent!.id, data)}
+        onDelete={() => selectedEvent && handleDelete(selectedEvent.id)}
+        onCancelEvent={() => selectedEvent && handleCancelEvent(selectedEvent.id)}
       />
     </Box>
   );

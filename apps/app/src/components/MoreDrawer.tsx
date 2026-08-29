@@ -14,7 +14,7 @@ import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import VerifiedOutlinedIcon from '@mui/icons-material/VerifiedOutlined';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
-import { BRAND } from '../lib/mockEvents';
+import { BRAND } from '../lib/brand';
 
 const ITEMS = [
   { label: 'Profile', icon: <PersonOutlineIcon />, badge: 0 },

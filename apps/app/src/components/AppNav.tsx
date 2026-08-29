@@ -18,7 +18,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import SportsIcon from '@mui/icons-material/Sports';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import MenuIcon from '@mui/icons-material/Menu';
-import { BRAND } from '../lib/mockEvents';
+import { BRAND } from '../lib/brand';
 import { MoreDrawer } from './MoreDrawer';
 
 export type NavRoute = 'home' | 'calendar' | 'coaching';

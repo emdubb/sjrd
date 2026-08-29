@@ -1,32 +1,19 @@
 ---
 name: code-quality
-description: 'Code quality enforcement for the SJRD monorepo. Runs the linter, reviews code against project standards (MUI preference, naming conventions, file/function length, component and utility structure), and flags opportunities for refactoring. Use before merging any feature.'
+description: 'Code quality standards for the SJRD monorepo, enforced as code is written — MUI preference, naming conventions, file/function length, component and utility structure — with opportunities for refactoring flagged. Use when coding any feature. For lint/format/typecheck gating before commit or merge, use pre-merge-checks instead.'
 ---
 
 # SJRD Code Quality Review
 
-This skill enforces code quality standards for the Sacramento Junior Roller Derby monorepo. When invoked:
+This skill enforces code quality standards for the Sacramento Junior Roller Derby monorepo as code is created. It covers semantic/structural standards, not the automated lint/format/typecheck gate — for that, use the `pre-merge-checks` skill before committing or merging. When invoked:
 
-1. Run the linter and formatter checks.
-2. Perform a semantic review against the rules below.
-3. Report findings with file:line references.
-4. For MUI deviations, explicitly ask the user to confirm before proceeding.
-
----
-
-## Step 1 — Run automated checks
-
-```bash
-pnpm lint
-pnpm format:check
-pnpm typecheck
-```
-
-Report any failures. Fix auto-fixable issues with `pnpm lint:fix` and `pnpm format`. Do not proceed past Step 1 if errors (not warnings) remain.
+1. Perform a semantic review against the rules below.
+2. Report findings with file:line references.
+3. For MUI deviations, explicitly ask the user to confirm before proceeding.
 
 ---
 
-## Step 2 — MUI Component Preference (`apps/app`)
+## Step 1 — MUI Component Preference (`apps/app`)
 
 The `apps/app` workspace uses `@mui/material`. **Native HTML elements must not be used when MUI has an equivalent.**
 
@@ -50,7 +37,7 @@ Do not implement the deviation without explicit user confirmation.
 
 ---
 
-## Step 3 — Naming Conventions
+## Step 2 — Naming Conventions
 
 Enforce across both `apps/web` and `apps/app`:
 
@@ -69,7 +56,7 @@ Flag any violations and suggest corrected names.
 
 ---
 
-## Step 4 — File and Function Length
+## Step 3 — File and Function Length
 
 - **File length:** warn at 300 lines. If a file exceeds this, identify what can be extracted (sub-components, hooks, utilities).
 - **Function/component length:** warn at 80 lines. Long render functions usually signal that sub-components or hooks should be extracted.
@@ -82,7 +69,7 @@ When flagging a long file or function, suggest the specific extraction:
 
 ---
 
-## Step 5 — Component and Utility Structure
+## Step 4 — Component and Utility Structure
 
 ### Components directory
 
@@ -120,7 +107,7 @@ must live in:
 
 ---
 
-## Step 6 — Reusability Scan
+## Step 5 — Reusability Scan
 
 After reviewing the changed files, scan for:
 
@@ -139,9 +126,6 @@ End every review with a concise table:
 
 | Category            | Status                     | Action required             |
 | ------------------- | -------------------------- | --------------------------- |
-| Lint                | ✅ / ❌                    | —                           |
-| Format              | ✅ / ❌                    | —                           |
-| Typecheck           | ✅ / ❌                    | —                           |
 | MUI usage           | ✅ / ⚠️ needs confirmation | List deviations             |
 | Naming              | ✅ / ❌                    | List violations             |
 | File length         | ✅ / ⚠️                    | List files over limit       |

@@ -18,7 +18,9 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "db:start": "cd packages/backend && supabase start",
     "db:reset": "pnpm db:seed",
-    "db:seed": "cd packages/backend && supabase db query < seed.sql"
+    "db:seed": "cd packages/backend && supabase db query < seed.sql",
+    "db:push:dev": "cd packages/backend && supabase db push --project-ref \"$SUPABASE_DEV_PROJECT_REF\" --password \"$SUPABASE_DEV_DB_PASSWORD\"",
+    "db:push:prod": "cd packages/backend && supabase db push --project-ref \"$SUPABASE_PROD_PROJECT_REF\" --password \"$SUPABASE_PROD_DB_PASSWORD\""
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
