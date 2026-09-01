@@ -4,6 +4,7 @@ import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { AppNav } from '../src/components/AppNav';
 import { EventCard } from '../src/components/EventCard';
+import { EventTypeFilterBar } from '../src/components/EventTypeFilterBar';
 import { EventDrawer } from '../src/components/EventDrawer';
 import { BRAND } from '../src/lib/brand';
 import { fetchUpcomingEvents, type AppEvent } from '../src/lib/events';
@@ -13,6 +14,12 @@ export default function Dashboard() {
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [viewingEvent, setViewingEvent] = useState<AppEvent | null>(null);
+  const [typeFilters, setTypeFilters] = useState<string[]>([]);
+
+  const toggleTypeFilter = (type: string) =>
+    setTypeFilters((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
 
   const loadEvents = useCallback(async (currentOffset = 0, append = false) => {
     try {
@@ -31,6 +38,9 @@ export default function Dashboard() {
   useEffect(() => {
     loadEvents();
   }, [loadEvents]);
+
+  const filteredEvents =
+    typeFilters.length === 0 ? events : events.filter((e) => typeFilters.includes(e.type));
 
   return (
     <>
@@ -81,6 +91,10 @@ export default function Dashboard() {
             </Typography>
           </Box>
 
+          <Box sx={{ mb: 2 }}>
+            <EventTypeFilterBar selectedTypes={typeFilters} onToggleType={toggleTypeFilter} />
+          </Box>
+
           {/* Event cards */}
           <Box
             sx={{
@@ -89,12 +103,12 @@ export default function Dashboard() {
               gap: 2,
             }}
           >
-            {events.length === 0 ? (
+            {filteredEvents.length === 0 ? (
               <Typography variant="body2" sx={{ color: '#9AABBD', py: 4 }}>
-                No upcoming events.
+                {events.length === 0 ? 'No upcoming events.' : 'No events match your filters.'}
               </Typography>
             ) : (
-              events.map((event) => (
+              filteredEvents.map((event) => (
                 <EventCard key={event.id} event={event} onClick={() => setViewingEvent(event)} />
               ))
             )}

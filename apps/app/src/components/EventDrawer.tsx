@@ -48,10 +48,7 @@ export function EventDrawer({ event, onClose, onSave, onDelete, onCancelEvent }:
         },
       }}
     >
-      <EventDrawerHeader
-        title={mode === 'view' ? 'Event Details' : 'Edit Event'}
-        onClose={onClose}
-      />
+      <EventDrawerHeader title={mode === 'view' ? undefined : 'Edit Event'} onClose={onClose} />
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {mode === 'view' ? (
           <>

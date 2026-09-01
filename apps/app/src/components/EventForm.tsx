@@ -18,7 +18,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import dayjs, { type Dayjs } from 'dayjs';
-import { BRAND } from '../lib/brand';
+import { BRAND, pillChipSx } from '../lib/brand';
 import { type AppEvent, fetchTeams, DEFAULT_LOCATION, type EventFormData } from '../lib/events';
 
 const TYPES = ['Practice', 'Game', 'Scrimmage', 'Other'];
@@ -38,18 +38,6 @@ const nth = (n: number) => {
       return 'th';
   }
 };
-
-const pillChipSx = (selected: boolean) => ({
-  borderRadius: '50px',
-  border: `1px solid ${selected ? BRAND.navy : '#C8D0DA'}`,
-  bgcolor: selected ? BRAND.navy : 'transparent',
-  color: selected ? '#fff' : BRAND.navy,
-  fontWeight: selected ? 700 : 400,
-  cursor: 'pointer',
-  '&:hover': { bgcolor: selected ? BRAND.navy : '#F5F7FA' },
-  '& .MuiChip-label': { px: 1.75 },
-  height: 36,
-});
 
 interface Props {
   open: boolean;
@@ -322,7 +310,8 @@ export function EventForm({
             variant="outlined"
             fullWidth
             multiline
-            minRows={4}
+            rows={4}
+            InputProps={{ inputComponent: 'textarea' }}
           />
         </Box>
 
@@ -364,11 +353,11 @@ export function EventForm({
                 onClick={onCancelEvent}
                 fullWidth
                 variant="outlined"
-                size="small"
                 sx={{
                   borderColor: '#E65100',
                   color: '#E65100',
                   borderRadius: 1,
+                  py: 1.5,
                   textTransform: 'none',
                   fontWeight: 600,
                   '&:hover': { bgcolor: '#FFF3E0', borderColor: '#E65100' },
@@ -380,11 +369,11 @@ export function EventForm({
                 onClick={onDelete}
                 fullWidth
                 variant="outlined"
-                size="small"
                 sx={{
                   borderColor: '#C62828',
                   color: '#C62828',
                   borderRadius: 1,
+                  py: 1.5,
                   textTransform: 'none',
                   fontWeight: 600,
                   '&:hover': { bgcolor: '#FFEBEE', borderColor: '#C62828' },

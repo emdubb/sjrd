@@ -15,6 +15,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import AddIcon from '@mui/icons-material/Add';
 import { AppNav } from '../src/components/AppNav';
 import { EventCard } from '../src/components/EventCard';
+import { EventTypeFilterBar } from '../src/components/EventTypeFilterBar';
 import { NewEventDrawer } from '../src/components/NewEventDrawer';
 import { EventDrawer } from '../src/components/EventDrawer';
 import { BRAND, MONTH_NAMES } from '../src/lib/brand';
@@ -149,6 +150,12 @@ export default function CalendarPage() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [newEventOpen, setNewEventOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<AppEvent | null>(null);
+  const [typeFilters, setTypeFilters] = useState<string[]>([]);
+
+  const toggleTypeFilter = (type: string) =>
+    setTypeFilters((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
 
   const loadEvents = useCallback(
     async (offset = 0, append = false) => {
@@ -207,12 +214,17 @@ export default function CalendarPage() {
   );
   const totalCells = Math.ceil((firstDayOfWeek + daysInMonth) / 7) * 7;
 
+  const monthEventsAll = useMemo(
+    () => events.filter((e) => e.year === viewYear && e.month === viewMonth),
+    [events, viewYear, viewMonth]
+  );
+
   const monthEvents = useMemo(
     () =>
-      events
-        .filter((e) => e.year === viewYear && e.month === viewMonth)
+      monthEventsAll
+        .filter((e) => typeFilters.length === 0 || typeFilters.includes(e.type))
         .sort((a, b) => a.day - b.day),
-    [events, viewYear, viewMonth]
+    [monthEventsAll, typeFilters]
   );
 
   const eventDayColors = useMemo(() => {
@@ -283,12 +295,20 @@ export default function CalendarPage() {
 
   const handleDayClick = (day: number) => setSelectedDay((d) => (d === day ? null : day));
 
+  const emptyEventsMessage =
+    monthEventsAll.length === 0
+      ? `No events ${selectedDay ? 'on this day' : 'this month'}`
+      : 'No events match your filters.';
+
   const EventList = (
     <>
+      <Box sx={{ mb: 2 }}>
+        <EventTypeFilterBar selectedTypes={typeFilters} onToggleType={toggleTypeFilter} />
+      </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {visibleEvents.length === 0 ? (
           <Typography variant="body2" sx={{ color: '#9AABBD', textAlign: 'center', py: 6 }}>
-            No events {selectedDay ? 'on this day' : 'this month'}
+            {emptyEventsMessage}
           </Typography>
         ) : (
           visibleEvents.map((event) => (

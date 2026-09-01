@@ -31,6 +31,9 @@ const EVENT_LABELS: Record<DbEventType, string> = {
   other: 'Other',
 };
 
+const EVENT_TYPE_ORDER: DbEventType[] = ['practice', 'game', 'scrimmage', 'other'];
+export const EVENT_TYPE_LABELS: string[] = EVENT_TYPE_ORDER.map((t) => EVENT_LABELS[t]);
+
 const EVENT_COLORS: Record<DbEventType, string> = {
   game: BRAND.amber,
   practice: BRAND.navy,
@@ -47,7 +50,7 @@ const TYPE_TO_ENUM: Record<string, DbEventType> = {
 
 const DAY_ABBR = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
 
-function formatTime(t: string): string {
+export function formatTime(t: string): string {
   const [h, m] = t.split(':').map(Number);
   const period = h >= 12 ? 'PM' : 'AM';
   const hour = h % 12 || 12;

@@ -3,7 +3,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { BRAND } from '../lib/brand';
 
 interface Props {
-  title: string;
+  title?: string;
   onClose: () => void;
 }
 
@@ -21,17 +21,21 @@ export function EventDrawerHeader({ title, onClose }: Props) {
           justifyContent: 'space-between',
           gap: 1,
           px: 3,
-          pt: 1,
-          pb: 1.5,
+          pt: title ? 1 : 0,
+          pb: title ? 1.5 : 0,
         }}
       >
-        <Typography sx={{ fontWeight: 700, fontSize: '1.25rem', color: BRAND.navy }}>
-          {title}
-        </Typography>
+        <Box>
+          {title && (
+            <Typography sx={{ fontWeight: 700, fontSize: '1.25rem', color: BRAND.navy }}>
+              {title}
+            </Typography>
+          )}
+        </Box>
         <IconButton
           onClick={onClose}
           aria-label="Close"
-          sx={{ color: '#9AABBD', width: 44, height: 44 }}
+          sx={{ color: '#9AABBD', width: 44, height: 44, ml: 'auto' }}
         >
           <CloseIcon />
         </IconButton>

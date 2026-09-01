@@ -7,6 +7,7 @@ import NotesIcon from '@mui/icons-material/Notes';
 import { BRAND, MONTH_NAMES } from '../lib/brand';
 import { getAccentColor, DEFAULT_LOCATION, type AppEvent } from '../lib/events';
 import { EventTypeLabel } from './EventTypeLabel';
+import { DetailRow } from './DetailRow';
 
 const RECURRENCE_LABELS: Record<string, string> = {
   none: 'Does not repeat',
@@ -14,17 +15,6 @@ const RECURRENCE_LABELS: Record<string, string> = {
   weekly: 'Weekly',
   monthly: 'Monthly',
 };
-
-function DetailRow({ icon, text }: { icon: React.ReactNode; text: string }) {
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, py: 1 }}>
-      <Box sx={{ color: '#9AABBD', mt: 0.25, flexShrink: 0 }}>{icon}</Box>
-      <Typography variant="body2" sx={{ color: '#4A5568', lineHeight: 1.6 }}>
-        {text}
-      </Typography>
-    </Box>
-  );
-}
 
 interface Props {
   event: AppEvent;

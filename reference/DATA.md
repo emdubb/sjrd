@@ -152,7 +152,7 @@ A single occurrence of an event, either standalone or generated from a series.
 | `start_time`          | time |                                                        |
 | `end_time`            | time |                                                        |
 
-**Relationships:** teams via `event_teams`; coaches via `event_coaches`; medics via `event_medics`; skater attendance via `attendances`; game roster via `rosters`.
+**Relationships:** teams via `event_teams`; coaches via `event_coaches`; medics via `event_medics`; skater attendance via `attendances`; game roster via `rosters`; planned drills (practice events) via `event_drills`.
 
 ### event_teams
 
@@ -181,6 +181,18 @@ Unique on (`event_id`, `profile_id`).
 | `profile_id` | FK to `profiles` (medic) |
 
 Unique on (`event_id`, `profile_id`).
+
+### event_drills
+
+The ordered practice plan for a practice event.
+
+| Field      | Type    | Notes                                 |
+| ---------- | ------- | ------------------------------------- |
+| `event_id` | FK      | `event_instances`                     |
+| `drill_id` | FK      | `drills`                              |
+| `position` | integer | Sort order within the practice's plan |
+
+Unique on (`event_id`, `drill_id`).
 
 ---
 
@@ -248,20 +260,43 @@ For MVP, all notifications are automated (event created, event changed, event ca
 
 ## Drills
 
-| Field              | Type    | Notes      |
-| ------------------ | ------- | ---------- |
-| `title`            | text    |            |
-| `author_id`        | FK      | `profiles` |
-| `description`      | text    |            |
-| `duration_minutes` | integer |            |
+| Field              | Type    | Notes                                                     |
+| ------------------ | ------- | --------------------------------------------------------- |
+| `title`            | text    |                                                           |
+| `author_id`        | FK      | `profiles`                                                |
+| `description`      | text    | Short summary of the drill's focus, optional              |
+| `instructions`     | text    | Step-by-step instructions for running the drill, optional |
+| `duration_minutes` | integer |                                                           |
 
-**Relationships:** types via `drill_drill_types`.
+**Relationships:** types via `drill_drill_types`; categories via `drill_drill_categories`; equipment via `drill_drill_equipment`.
 
 ### drill_drill_types
 
-| Field        | Notes                                                     |
-| ------------ | --------------------------------------------------------- |
-| `drill_id`   | FK to `drills`                                            |
-| `drill_type` | enum: `jamming` \| `blocking` \| `endurance` \| `offense` |
+| Field        | Notes                                      |
+| ------------ | ------------------------------------------ |
+| `drill_id`   | FK to `drills`                             |
+| `drill_type` | enum: `jamming` \| `blocking` \| `offense` |
 
 Unique on (`drill_id`, `drill_type`).
+
+### drill_drill_categories
+
+Independent from `drill_drill_types` — a drill can carry both a type (e.g. `jamming`) and a category (e.g. `individual_skills`).
+
+| Field            | Notes                                                                          |
+| ---------------- | ------------------------------------------------------------------------------ |
+| `drill_id`       | FK to `drills`                                                                 |
+| `drill_category` | enum: `warm_up` \| `endurance` \| `individual_skills` \| `partner_pack_skills` |
+
+Unique on (`drill_id`, `drill_category`).
+
+### drill_drill_equipment
+
+Independent from `drill_drill_types` and `drill_drill_categories` — equipment needed to run the drill.
+
+| Field             | Notes                                                                                     |
+| ----------------- | ----------------------------------------------------------------------------------------- |
+| `drill_id`        | FK to `drills`                                                                            |
+| `drill_equipment` | enum: `disc_cones` \| `pointed_cones` \| `hitting_bags` \| `weaving_poles` \| `pvc_poles` |
+
+Unique on (`drill_id`, `drill_equipment`).

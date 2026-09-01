@@ -24,3 +24,15 @@ export const MONTH_NAMES = [
 ];
 
 export const formatEventDate = (e: AppEvent) => `${MONTH_NAMES[e.month].slice(0, 3)} ${e.day}`;
+
+export const pillChipSx = (selected: boolean) => ({
+  borderRadius: '50px',
+  border: `1px solid ${selected ? BRAND.navy : '#C8D0DA'}`,
+  bgcolor: selected ? BRAND.navy : 'transparent',
+  color: selected ? '#fff' : BRAND.navy,
+  fontWeight: selected ? 700 : 400,
+  cursor: 'pointer',
+  '&:hover': { bgcolor: selected ? BRAND.navy : '#F5F7FA' },
+  '& .MuiChip-label': { px: 1.75 },
+  height: 36,
+});
