@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { Box, Typography, Tabs, Tab, Button, Fab, Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { AppNav } from '../../src/components/AppNav';
-import { CoachingBackHeader } from '../../src/components/CoachingBackHeader';
+import { BackHeader } from '../../src/components/BackHeader';
 import { PracticeScheduleCard } from '../../src/components/PracticeScheduleCard';
 import { DrillRow } from '../../src/components/DrillRow';
 import { DrillDrawer } from '../../src/components/DrillDrawer';
@@ -154,7 +154,7 @@ export default function PracticePage() {
   return (
     <Box sx={{ bgcolor: '#fff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <AppNav current="coaching" />
-      <CoachingBackHeader title="Practice" onBack={() => router.replace('/coaching')} />
+      <BackHeader title="Practice" onBack={() => router.replace('/coaching')} />
 
       <Tabs
         value={tab}

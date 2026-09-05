@@ -1,22 +1,20 @@
 import ImagePlaceholder from './ImagePlaceholder';
 
-interface TeamCardProps {
+interface CoachCardProps {
   name: string;
-  tag: string;
-  ageNote: string;
-  description: string;
+  role: string;
+  bio: string;
 }
 
-export default function TeamCard({ name, tag, ageNote, description }: TeamCardProps) {
+export default function CoachCard({ name, role, bio }: CoachCardProps) {
   return (
     <article className="card">
       <div className="media">
-        <ImagePlaceholder label={`${name} team photo placeholder`} aspectRatio="4 / 3" />
-        <span className="tag">{tag}</span>
+        <ImagePlaceholder label={`${name} headshot placeholder`} aspectRatio="1 / 1" />
+        <span className="tag">{role}</span>
       </div>
-      <h2 className="name">{name}</h2>
-      <p className="age-note">{ageNote}</p>
-      <p className="description">{description}</p>
+      <h3 className="name">{name}</h3>
+      <p className="bio">{bio}</p>
 
       <style jsx>{`
         .card {
@@ -38,12 +36,16 @@ export default function TeamCard({ name, tag, ageNote, description }: TeamCardPr
         .media {
           position: relative;
           margin-bottom: 1.75rem;
+          max-width: 200px;
+          margin-left: auto;
+          margin-right: auto;
         }
 
         .tag {
           position: absolute;
-          left: 1rem;
+          left: 50%;
           bottom: -1rem;
+          transform: translateX(-50%);
           display: inline-block;
           padding: 0.4rem 0.9rem;
           background: #0b233f;
@@ -53,6 +55,7 @@ export default function TeamCard({ name, tag, ageNote, description }: TeamCardPr
           letter-spacing: 0.08em;
           font-size: 0.875rem;
           font-weight: 700;
+          white-space: nowrap;
           box-shadow: 0 6px 14px rgba(11, 35, 63, 0.3);
           transition: background 0.2s ease, color 0.2s ease;
         }
@@ -64,21 +67,16 @@ export default function TeamCard({ name, tag, ageNote, description }: TeamCardPr
 
         .name {
           margin: 0.25rem 0;
-          font-size: 1.6rem;
+          font-size: 1.4rem;
+          text-align: center;
         }
 
-        .age-note {
-          margin: 0 0 0.75rem;
-          font-size: 0.95rem;
-          font-weight: 600;
-          color: rgba(11, 35, 63, 0.65);
-        }
-
-        .description {
+        .bio {
           margin: 0;
           font-size: 1rem;
           line-height: 1.7;
           color: rgba(11, 35, 63, 0.85);
+          text-align: center;
         }
       `}</style>
     </article>

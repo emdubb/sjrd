@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { Box, Typography, Button, Chip } from '@mui/material';
 import { AppNav } from '../../src/components/AppNav';
-import { CoachingBackHeader } from '../../src/components/CoachingBackHeader';
+import { BackHeader } from '../../src/components/BackHeader';
 import { GameScheduleCard } from '../../src/components/GameScheduleCard';
 import { GameDetailDrawer } from '../../src/components/GameDetailDrawer';
 import { PracticeFilterPopover } from '../../src/components/PracticeFilterPopover';
@@ -83,7 +83,7 @@ export default function GamesPage() {
   return (
     <Box sx={{ bgcolor: '#fff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <AppNav current="coaching" />
-      <CoachingBackHeader title="Games" onBack={() => router.replace('/coaching')} />
+      <BackHeader title="Games" onBack={() => router.replace('/coaching')} />
 
       <Box
         sx={{

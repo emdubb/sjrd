@@ -30,8 +30,15 @@ export default function FaqAccordion({ items }: FaqAccordionProps) {
         .faq-item {
           background: #ffffff;
           border: 1px solid rgba(11, 35, 63, 0.16);
+          border-left: 4px solid transparent;
           border-radius: 12px;
           padding: 1rem 1.25rem;
+          transition: border-color 0.15s ease;
+        }
+
+        .faq-item:hover,
+        .faq-item[open] {
+          border-left-color: #f2bf35;
         }
 
         summary {
@@ -52,7 +59,7 @@ export default function FaqAccordion({ items }: FaqAccordionProps) {
           content: '+';
           display: inline-block;
           width: 1.25rem;
-          color: #f2bf35;
+          color: #0b233f;
           font-weight: 700;
         }
 

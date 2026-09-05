@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { Box, Typography, Chip, TextField } from '@mui/material';
 import { AppNav } from '../../src/components/AppNav';
-import { CoachingBackHeader } from '../../src/components/CoachingBackHeader';
+import { BackHeader } from '../../src/components/BackHeader';
 import { SkaterRow } from '../../src/components/SkaterRow';
 import { SkaterDetailDrawer } from '../../src/components/SkaterDetailDrawer';
 import { pillChipSx } from '../../src/lib/brand';
@@ -38,7 +38,7 @@ export default function SkatersPage() {
   return (
     <Box sx={{ bgcolor: '#fff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <AppNav current="coaching" />
-      <CoachingBackHeader title="Skaters" onBack={() => router.replace('/coaching')} />
+      <BackHeader title="Skaters" onBack={() => router.replace('/coaching')} />
 
       <Box
         sx={{

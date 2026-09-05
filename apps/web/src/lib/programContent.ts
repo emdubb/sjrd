@@ -5,16 +5,16 @@ export const LOCATION = {
 
 export const PATHWAY_STEPS = [
   {
-    name: 'Ursa Minor',
-    tag: 'Blast Off Bears',
+    name: 'Derby 101',
+    tag: 'Training Program',
     description:
       'A beginner-level program open to all youth with no prior skills required. Focuses on basic skating skills, safety, and introduces roller derby concepts.',
   },
   {
-    name: 'Ursa Major',
-    tag: 'Blast Off Bears',
+    name: 'Derby 201',
+    tag: 'Training Program',
     description:
-      'Invitation-only, and requires completion of Ursa Minor. Focuses on roller derby gameplay and full contact to prepare skaters for Intergalactic.',
+      'Invitation-only, and requires completion of Derby 101. Focuses on roller derby gameplay and full contact to prepare skaters for Intergalactic.',
   },
   {
     name: 'Intergalactic',
@@ -32,16 +32,16 @@ export const PATHWAY_STEPS = [
 
 export const TEAMS = [
   {
-    name: 'Ursa Minor',
-    tag: 'Blast Off Bears · Beginner',
+    name: 'Derby 101',
+    tag: 'Training Program · Beginner',
     ageNote: 'Open to all youth, ages 8-17',
     description:
       'No prior skills required. Skaters build basic skating skills, safety habits, and learn foundational roller derby concepts.',
   },
   {
-    name: 'Ursa Major',
-    tag: 'Blast Off Bears · Invitation Only',
-    ageNote: 'Requires completion of Ursa Minor',
+    name: 'Derby 201',
+    tag: 'Training Program · Invitation Only',
+    ageNote: 'Requires completion of Derby 101',
     description:
       'Skaters learn roller derby gameplay and full contact to prepare for joining the Intergalactic team.',
   },
@@ -61,11 +61,22 @@ export const TEAMS = [
   },
 ];
 
-export const PRACTICE_SCHEDULE = [
-  { day: 'Wednesdays', time: '6:00 - 8:00 PM', team: 'Mixed team practice' },
-  { day: 'Fridays', time: '5:00 - 7:00 PM', team: 'Sabotage' },
-  { day: 'Sundays', time: '2:00 - 4:00 PM', team: 'Intergalactic' },
-  { day: 'Sundays', time: '3:30 - 5:30 PM', team: 'Sabotage' },
+export const COACHES = [
+  {
+    name: 'Coach Name Placeholder',
+    role: 'Head Coach',
+    bio: 'Add a short bio here — derby name, background, and what they love about coaching the Beastie Bears.',
+  },
+  {
+    name: 'Coach Name Placeholder',
+    role: 'Assistant Coach',
+    bio: 'Add a short bio here — derby name, background, and what they love about coaching the Beastie Bears.',
+  },
+  {
+    name: 'Coach Name Placeholder',
+    role: 'Assistant Coach',
+    bio: 'Add a short bio here — derby name, background, and what they love about coaching the Beastie Bears.',
+  },
 ];
 
 export const QUICK_FACTS = [
@@ -116,7 +127,7 @@ export const FAQS = [
   {
     question: 'My skater has never skated before. Where do they start?',
     answer:
-      'Ursa Minor is our beginner-level program and does not require any prior skills. It focuses on basic skating skills, safety, and roller derby concepts, and is the entry point into our Blast Off Bears pipeline.',
+      'Derby 101 is our beginner-level program and does not require any prior skills. It focuses on basic skating skills, safety, and roller derby concepts, and is the entry point into our Training Program pipeline.',
   },
   {
     question: 'What does it cost?',

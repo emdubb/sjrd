@@ -4,7 +4,7 @@ import { Box, Typography, Tabs, Tab, Chip, TextField } from '@mui/material';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import { AppNav } from '../../src/components/AppNav';
-import { CoachingBackHeader } from '../../src/components/CoachingBackHeader';
+import { BackHeader } from '../../src/components/BackHeader';
 import { SkaterRow } from '../../src/components/SkaterRow';
 import { SkaterDetailDrawer } from '../../src/components/SkaterDetailDrawer';
 import { BRAND, pillChipSx } from '../../src/lib/brand';
@@ -51,7 +51,7 @@ export default function TrainingProgramPage() {
   return (
     <Box sx={{ bgcolor: '#fff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <AppNav current="coaching" />
-      <CoachingBackHeader title="Derby 101" onBack={() => router.replace('/coaching')} />
+      <BackHeader title="Derby 101" onBack={() => router.replace('/coaching')} />
 
       <Tabs
         value={tab}

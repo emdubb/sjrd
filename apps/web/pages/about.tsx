@@ -1,21 +1,25 @@
-import PageShell from '../src/components/PageShell';
+import Hero from '../src/components/Hero';
+import Section from '../src/components/Section';
 import PathwaySteps from '../src/components/PathwaySteps';
 import ImagePlaceholder from '../src/components/ImagePlaceholder';
+import CoachCard from '../src/components/CoachCard';
 import Button from '../src/components/Button';
-import { PATHWAY_STEPS } from '../src/lib/programContent';
+import { PATHWAY_STEPS, COACHES } from '../src/lib/programContent';
 
 export default function About() {
   return (
-    <PageShell
-      eyebrow="About Us"
-      title="About the Beastie Bears"
-      description="The Beastie Bears are the Sacramento Roller Derby junior program. We're an open gender program for skaters ages 8-17 (18 if you turn 17 before the JRDA season begins on September 1), and a proud member of the Junior Roller Derby Association (JRDA)."
-    >
-      <section className="section">
-        <ImagePlaceholder label="Skaters on track action photo placeholder" aspectRatio="21 / 9" />
-      </section>
+    <>
+      <Hero
+        eyebrow="About Us"
+        title="About the Beastie Bears"
+        description="The Beastie Bears are the Sacramento Roller Derby junior program. We're an open gender program for skaters ages 8-17 (18 if you turn 17 before the JRDA season begins on September 1), and a proud member of the Junior Roller Derby Association (JRDA)."
+      />
 
-      <section className="section">
+      <Section tone="light">
+        <ImagePlaceholder label="Skaters on track action photo placeholder" aspectRatio="21 / 9" />
+      </Section>
+
+      <Section tone="tint">
         <h2 className="section-title">Our Teams</h2>
         <p className="section-body">
           We have two teams in our Beastie Bears program. <strong>Sabotage</strong> is our
@@ -23,56 +27,79 @@ export default function About() {
           <strong>Intergalactic</strong> is our development team, fostering a fun and competitive
           environment to build the skills skaters need to be ready for higher-level play.
         </p>
-      </section>
+      </Section>
 
-      <section className="section">
-        <h2 className="section-title">Getting Started: Blast Off Bears</h2>
+      <Section tone="light">
+        <h2 className="section-title">Getting Started: Training Program</h2>
         <p className="section-body">
-          Our Blast Off Bears program builds the foundational skills needed to play roller derby
-          and serves as the entry feeder into Intergalactic. <strong>Ursa Minor</strong> is a
+          Our Training Program builds the foundational skills needed to play roller derby and
+          serves as the entry feeder into Intergalactic. <strong>Derby 101</strong> is a
           beginner-level program open to all youth and does not require any prior skills — it
           focuses on basic skating skills, safety, and roller derby concepts.{' '}
-          <strong>Ursa Major</strong> is by invitation only and requires completion of Ursa Minor.
+          <strong>Derby 201</strong> is by invitation only and requires completion of Derby 101.
           It focuses on learning roller derby gameplay and full contact to prepare skaters for
           joining the Intergalactic team.
         </p>
-      </section>
+      </Section>
 
-      <section className="section">
-        <h2 className="section-title">The Pathway</h2>
-        <p className="section-body">
+      <Section tone="dark">
+        <h2 className="section-title center">The Pathway</h2>
+        <p className="section-body center">
           Every skater has a clear path forward, from first strides to competitive play.
         </p>
         <PathwaySteps steps={PATHWAY_STEPS} />
-      </section>
+      </Section>
 
-      <section className="section cta">
-        <Button href="/join">Join Sacramento Junior Roller Derby</Button>
-      </section>
+      <Section tone="tint">
+        <h2 className="section-title center">Meet Our Coaches</h2>
+        <p className="section-body center">
+          Our coaches keep every practice safe, fun, and focused on building skaters up.
+        </p>
+        <div className="grid">
+          {COACHES.map((coach) => (
+            <CoachCard key={coach.name} {...coach} />
+          ))}
+        </div>
+      </Section>
+
+      <Section tone="light" narrow>
+        <div className="cta">
+          <Button href="/join">Join Sacramento Junior Roller Derby</Button>
+        </div>
+      </Section>
 
       <style jsx>{`
-        .section {
-          margin-top: 3.5rem;
-          text-align: left;
+        .section-title {
+          font-size: 1.9rem;
+          margin: 0 0 1rem;
         }
 
-        .section-title {
-          font-size: 1.75rem;
-          margin: 0 0 1rem;
-          color: #0b233f;
+        .section-title.center {
+          text-align: center;
         }
 
         .section-body {
           margin: 0;
           font-size: 1.1rem;
           line-height: 1.8;
-          color: rgba(11, 35, 63, 0.85);
+        }
+
+        .section-body.center {
+          text-align: center;
+          max-width: 640px;
+          margin: 0 auto 2.5rem;
         }
 
         .cta {
           text-align: center;
         }
+
+        .grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 1.5rem;
+        }
       `}</style>
-    </PageShell>
+    </>
   );
 }

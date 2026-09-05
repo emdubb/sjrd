@@ -1,7 +1,7 @@
-import PageShell from '../src/components/PageShell';
-import ScheduleTable from '../src/components/ScheduleTable';
+import Hero from '../src/components/Hero';
+import Section from '../src/components/Section';
 import EventCard from '../src/components/EventCard';
-import { PRACTICE_SCHEDULE, LOCATION } from '../src/lib/programContent';
+import { LOCATION } from '../src/lib/programContent';
 
 const PLACEHOLDER_EVENTS = [
   {
@@ -23,21 +23,14 @@ const PLACEHOLDER_EVENTS = [
 
 export default function Events() {
   return (
-    <PageShell
-      eyebrow="Practices & Events"
-      title="Events"
-      description={`Practices and home games are held at ${LOCATION.name}, ${LOCATION.address}.`}
-    >
-      <section className="section">
-        <ScheduleTable rows={PRACTICE_SCHEDULE} />
-        <p className="note">
-          Skaters should arrive with enough time to warm up off skates and get geared up before
-          their scheduled start time. Our facility has two tracks — please stay off the other
-          team's track during their practice session.
-        </p>
-      </section>
+    <>
+      <Hero
+        eyebrow="Events"
+        title="Events"
+        description={`Home games and tournaments are held at ${LOCATION.name}, ${LOCATION.address}. Practice schedules are shared with registered families.`}
+      />
 
-      <section className="section">
+      <Section tone="tint">
         <h2 className="section-title">Upcoming Games & Tournaments</h2>
         <p className="note">
           Registered families get full calendar access after joining. The cards below show how
@@ -48,18 +41,12 @@ export default function Events() {
             <EventCard key={event.title} {...event} />
           ))}
         </div>
-      </section>
+      </Section>
 
       <style jsx>{`
-        .section {
-          margin-top: 3rem;
-          text-align: left;
-        }
-
         .section-title {
-          font-size: 1.75rem;
+          font-size: 1.9rem;
           margin: 0 0 1rem;
-          color: #0b233f;
           text-align: center;
         }
 
@@ -79,6 +66,6 @@ export default function Events() {
           margin-top: 2rem;
         }
       `}</style>
-    </PageShell>
+    </>
   );
 }

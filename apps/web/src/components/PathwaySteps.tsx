@@ -45,21 +45,34 @@ export default function PathwaySteps({ steps }: PathwayStepsProps) {
         }
 
         .step-card {
-          background: #1f3a5b;
-          color: #ffffff;
+          background: #ffffff;
+          color: #0b233f;
           border-radius: 16px;
           padding: 1.5rem;
           width: 220px;
           text-align: left;
+          border: 1px solid rgba(11, 35, 63, 0.08);
+          box-shadow: 0 10px 24px rgba(11, 35, 63, 0.1);
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .step-card:hover {
+          transform: translateY(-6px);
+          box-shadow: 0 18px 32px rgba(11, 35, 63, 0.2);
         }
 
         .tag {
+          display: inline-block;
           margin: 0;
+          padding: 0.2rem 0.6rem;
+          background: #0b233f;
+          border-radius: 999px;
           text-transform: uppercase;
-          letter-spacing: 0.12em;
+          letter-spacing: 0.1em;
           font-size: 0.875rem;
           font-weight: 700;
-          color: #f2bf35;
+          color: #ffffff;
+          transform: rotate(-1.5deg);
         }
 
         .name {
@@ -71,12 +84,21 @@ export default function PathwaySteps({ steps }: PathwayStepsProps) {
           margin: 0;
           font-size: 0.95rem;
           line-height: 1.6;
-          color: #b9c2cc;
+          color: rgba(11, 35, 63, 0.72);
         }
 
         .arrow {
-          font-size: 1.5rem;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: #f2bf35;
           color: #0b233f;
+          font-weight: 700;
+          font-size: 1.1rem;
         }
 
         @media (max-width: 900px) {

@@ -27,7 +27,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import GroupIcon from '@mui/icons-material/Group';
 import CloseIcon from '@mui/icons-material/Close';
 import { AppNav } from '../src/components/AppNav';
-import { CoachingBackHeader } from '../src/components/CoachingBackHeader';
+import { BackHeader } from '../src/components/BackHeader';
 import { ColoredTag } from '../src/components/ColoredTag';
 import { BRAND } from '../src/lib/brand';
 import {
@@ -399,7 +399,7 @@ export default function ProfilePage() {
   return (
     <Box sx={{ bgcolor: '#fff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <AppNav current="more" />
-      <CoachingBackHeader
+      <BackHeader
         title="Profile"
         onBack={handleBackClick}
         action={

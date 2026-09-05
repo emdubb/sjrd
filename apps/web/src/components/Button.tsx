@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 interface ButtonProps {
   href: string;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'outline';
   children: ReactNode;
 }
 
@@ -11,9 +11,14 @@ export default function Button({ href, variant = 'primary', children }: ButtonPr
   return (
     <Link href={href} className={`btn btn-${variant}`}>
       {children}
+      <span className="arrow" aria-hidden="true">
+        →
+      </span>
       <style jsx>{`
         :global(.btn) {
-          display: inline-block;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
           text-decoration: none;
           text-transform: uppercase;
           letter-spacing: 0.08em;
@@ -22,6 +27,11 @@ export default function Button({ href, variant = 'primary', children }: ButtonPr
           padding: 0.9rem 1.75rem;
           border-radius: 8px;
           border: 2px solid transparent;
+          transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+
+        :global(.btn:hover) {
+          transform: translateY(-3px);
         }
 
         :global(.btn:focus-visible) {
@@ -29,9 +39,18 @@ export default function Button({ href, variant = 'primary', children }: ButtonPr
           outline-offset: 3px;
         }
 
+        :global(.btn .arrow) {
+          transition: transform 0.15s ease;
+        }
+
+        :global(.btn:hover .arrow) {
+          transform: translateX(3px);
+        }
+
         :global(.btn-primary) {
           background: #f2bf35;
           color: #0b233f;
+          box-shadow: 0 8px 18px rgba(242, 191, 53, 0.35);
         }
 
         :global(.btn-primary:hover),
@@ -49,6 +68,18 @@ export default function Button({ href, variant = 'primary', children }: ButtonPr
         :global(.btn-secondary:focus-visible) {
           background: #0b233f;
           color: #ffffff;
+        }
+
+        :global(.btn-outline) {
+          background: transparent;
+          border-color: #ffffff;
+          color: #ffffff;
+        }
+
+        :global(.btn-outline:hover),
+        :global(.btn-outline:focus-visible) {
+          background: #ffffff;
+          color: #0b233f;
         }
       `}</style>
     </Link>

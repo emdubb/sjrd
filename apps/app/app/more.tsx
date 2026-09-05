@@ -30,7 +30,7 @@ import { BRAND } from '../src/lib/brand';
 const ITEMS = [
   { label: 'Profile', icon: <PersonOutlineIcon />, badge: 0, route: '/profile' as const },
   { label: 'Notifications', icon: <NotificationsNoneIcon />, badge: 2, route: null },
-  { label: 'Admin', icon: <AdminPanelSettingsIcon />, badge: 0, route: null },
+  { label: 'Admin', icon: <AdminPanelSettingsIcon />, badge: 0, route: '/admin' as const },
   { label: 'Eligibility', icon: <VerifiedOutlinedIcon />, badge: 0, route: null },
   { label: 'References', icon: <MenuBookIcon />, badge: 0, route: null },
 ];

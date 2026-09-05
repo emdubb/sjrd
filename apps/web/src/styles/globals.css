@@ -10,3 +10,14 @@ body {
 *::after {
   box-sizing: border-box;
 }
+
+h1,
+h2,
+h3,
+.eyebrow,
+.hero-title,
+.section-title {
+  font-family: var(--font-display), system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  font-weight: 400;
+}

@@ -9,7 +9,7 @@ interface Props {
   action?: ReactNode;
 }
 
-export function CoachingBackHeader({ title, onBack, action }: Props) {
+export function BackHeader({ title, onBack, action }: Props) {
   return (
     <Box
       sx={{
@@ -22,7 +22,7 @@ export function CoachingBackHeader({ title, onBack, action }: Props) {
     >
       <Button
         onClick={onBack}
-        aria-label="Back to Coaching"
+        aria-label="Back"
         startIcon={<ArrowBackIcon fontSize="small" />}
         sx={{
           color: BRAND.steel,

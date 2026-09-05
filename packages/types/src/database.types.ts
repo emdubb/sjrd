@@ -688,6 +688,110 @@ export type Database = {
           },
         ];
       };
+      pending_user_teams: {
+        Row: {
+          pending_user_id: string;
+          team_id: string;
+        };
+        Insert: {
+          pending_user_id: string;
+          team_id: string;
+        };
+        Update: {
+          pending_user_id?: string;
+          team_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'pending_user_teams_pending_user_id_fkey';
+            columns: ['pending_user_id'];
+            isOneToOne: false;
+            referencedRelation: 'pending_users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'pending_user_teams_team_id_fkey';
+            columns: ['team_id'];
+            isOneToOne: false;
+            referencedRelation: 'teams';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      pending_user_types: {
+        Row: {
+          pending_user_id: string;
+          user_type: Database['public']['Enums']['user_type'];
+        };
+        Insert: {
+          pending_user_id: string;
+          user_type: Database['public']['Enums']['user_type'];
+        };
+        Update: {
+          pending_user_id?: string;
+          user_type?: Database['public']['Enums']['user_type'];
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'pending_user_types_pending_user_id_fkey';
+            columns: ['pending_user_id'];
+            isOneToOne: false;
+            referencedRelation: 'pending_users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      pending_users: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          email: string;
+          first_name: string;
+          id: string;
+          invited_at: string | null;
+          last_name: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          email: string;
+          first_name: string;
+          id?: string;
+          invited_at?: string | null;
+          last_name: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          email?: string;
+          first_name?: string;
+          id?: string;
+          invited_at?: string | null;
+          last_name?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'pending_users_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'pending_users_updated_by_fkey';
+            columns: ['updated_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       profile_user_types: {
         Row: {
           created_at: string;
@@ -744,6 +848,7 @@ export type Database = {
           derby_name: string | null;
           first_name: string;
           id: string;
+          invited_at: string | null;
           last_name: string;
           phone: string | null;
           preferred_name: string | null;
@@ -758,6 +863,7 @@ export type Database = {
           derby_name?: string | null;
           first_name: string;
           id: string;
+          invited_at?: string | null;
           last_name: string;
           phone?: string | null;
           preferred_name?: string | null;
@@ -772,6 +878,7 @@ export type Database = {
           derby_name?: string | null;
           first_name?: string;
           id?: string;
+          invited_at?: string | null;
           last_name?: string;
           phone?: string | null;
           preferred_name?: string | null;
@@ -1075,6 +1182,21 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      admin_list_profile_users: {
+        Args: never;
+        Returns: {
+          created_at: string;
+          derby_name: string | null;
+          email: string;
+          first_name: string;
+          id: string;
+          invited_at: string | null;
+          last_name: string;
+          phone: string | null;
+          preferred_name: string | null;
+          status: Database['public']['Enums']['profile_status'];
+        }[];
+      };
       has_user_type: {
         Args: { t: Database['public']['Enums']['user_type'] };
         Returns: boolean;

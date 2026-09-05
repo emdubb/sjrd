@@ -1,13 +1,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
-
-const NAV_LINKS = [
-  { label: 'Home', href: '/' },
-  { label: 'Teams', href: '/teams' },
-  { label: 'Events', href: '/events' },
-  { label: 'About Us', href: '/about' },
-  { label: 'FAQ', href: '/faq' },
-];
+import { NAV_LINKS } from '../lib/nav';
 
 export default function NavBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -85,10 +78,10 @@ export default function NavBar() {
 
         :global(.brand) {
           color: #ffffff;
-          font-weight: 700;
-          font-size: 1.1rem;
+          font-family: var(--font-display), sans-serif;
+          font-size: 1.35rem;
           text-decoration: none;
-          letter-spacing: 0.02em;
+          letter-spacing: 0.03em;
           white-space: nowrap;
         }
 
@@ -136,12 +129,15 @@ export default function NavBar() {
           color: #0b233f;
           padding: 0.6rem 1.25rem;
           border-radius: 8px;
+          transition: transform 0.15s ease, background 0.15s ease;
+          display: inline-block;
         }
 
         .links :global(.join-button:hover),
         .links :global(.join-button:focus-visible) {
           color: #0b233f;
           background: #ffcf5c;
+          transform: translateY(-2px);
         }
 
         .menu-toggle {

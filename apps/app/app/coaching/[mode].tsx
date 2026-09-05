@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Box, Typography } from '@mui/material';
 import { AppNav } from '../../src/components/AppNav';
-import { CoachingBackHeader } from '../../src/components/CoachingBackHeader';
+import { BackHeader } from '../../src/components/BackHeader';
 import { BRAND } from '../../src/lib/brand';
 import { COACHING_MODES } from '../../src/lib/coachingModes';
 
@@ -20,7 +20,7 @@ export default function CoachingModeScreen() {
   return (
     <Box sx={{ bgcolor: '#fff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <AppNav current="coaching" />
-      <CoachingBackHeader title={coachingMode.label} onBack={() => router.replace('/coaching')} />
+      <BackHeader title={coachingMode.label} onBack={() => router.replace('/coaching')} />
 
       <Box
         sx={{
