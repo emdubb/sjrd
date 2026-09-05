@@ -1,18 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'expo-router';
-import { Box, Typography, Chip } from '@mui/material';
+import { Box, Typography, Chip, TextField } from '@mui/material';
 import { AppNav } from '../../src/components/AppNav';
 import { CoachingBackHeader } from '../../src/components/CoachingBackHeader';
 import { SkaterRow } from '../../src/components/SkaterRow';
 import { SkaterDetailDrawer } from '../../src/components/SkaterDetailDrawer';
 import { pillChipSx } from '../../src/lib/brand';
-import { fetchSkaters, type SkaterListItem } from '../../src/lib/skaters';
+import { fetchSkaters, filterSkaters, type SkaterListItem } from '../../src/lib/skaters';
 import { fetchTeams } from '../../src/lib/events';
 
 export default function SkatersPage() {
   const router = useRouter();
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
   const [teamFilter, setTeamFilter] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
   const [skaters, setSkaters] = useState<SkaterListItem[]>([]);
   const [selectedSkaterId, setSelectedSkaterId] = useState<string | null>(null);
 
@@ -32,6 +33,8 @@ export default function SkatersPage() {
       .catch(() => {});
   }, []);
 
+  const visibleSkaters = filterSkaters(skaters, search);
+
   return (
     <Box sx={{ bgcolor: '#fff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <AppNav current="coaching" />
@@ -49,6 +52,14 @@ export default function SkatersPage() {
           overflowY: 'auto',
         }}
       >
+        <TextField
+          label="Search skaters"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          variant="outlined"
+          fullWidth
+        />
+
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
           <Chip
             label="All Teams"
@@ -65,12 +76,12 @@ export default function SkatersPage() {
           ))}
         </Box>
 
-        {skaters.length === 0 ? (
+        {visibleSkaters.length === 0 ? (
           <Typography variant="body2" sx={{ color: '#9AABBD', py: 4, textAlign: 'center' }}>
-            No skaters found.
+            {skaters.length === 0 ? 'No skaters found.' : 'No skaters match your search.'}
           </Typography>
         ) : (
-          skaters.map((skater) => (
+          visibleSkaters.map((skater) => (
             <SkaterRow
               key={skater.id}
               skater={skater}

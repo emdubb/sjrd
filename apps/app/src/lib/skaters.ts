@@ -16,11 +16,19 @@ export interface SkaterListItem {
   isCurrent: boolean;
 }
 
+export function filterSkaters(skaters: SkaterListItem[], search: string): SkaterListItem[] {
+  const query = search.trim().toLowerCase();
+  if (!query) return skaters;
+  return skaters.filter((s) => s.name.toLowerCase().includes(query));
+}
+
 export interface GuardianContact {
   name: string;
   lastName: string;
   phone: string | null;
 }
+
+export type SkaterStatus = 'active' | 'inactive';
 
 export interface SkaterDetail {
   id: string;
@@ -29,6 +37,7 @@ export interface SkaterDetail {
   preferredName: string | null;
   lastName: string;
   teamName: string;
+  status: SkaterStatus;
   attendanceRate: number | null;
   allergies: string | null;
   likes: string | null;
@@ -190,7 +199,7 @@ export async function fetchSkaterDetail(skaterId: string): Promise<SkaterDetail 
     supabase
       .from('profiles')
       .select(
-        `id, first_name, last_name, preferred_name, derby_name, allergies, likes, dislikes,
+        `id, first_name, last_name, preferred_name, derby_name, allergies, likes, dislikes, status,
          team_members!team_members_profile_id_fkey(team_id, teams(id, name))`
       )
       .eq('id', skaterId)
@@ -227,6 +236,7 @@ export async function fetchSkaterDetail(skaterId: string): Promise<SkaterDetail 
     preferredName: row.preferred_name,
     lastName: row.last_name,
     teamName,
+    status: row.status === 'inactive' ? 'inactive' : 'active',
     attendanceRate: rate,
     allergies: row.allergies,
     likes: row.likes,

@@ -7,16 +7,22 @@ import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { EventDrawerHeader } from './EventDrawerHeader';
 import { ColoredTag } from './ColoredTag';
 import { DetailRow } from './DetailRow';
 import { BRAND } from '../lib/brand';
-import { fetchSkaterDetail, type SkaterDetail } from '../lib/skaters';
+import { fetchSkaterDetail, type SkaterDetail, type SkaterStatus } from '../lib/skaters';
 
 interface Props {
   skaterId: string | null;
   onClose: () => void;
 }
+
+const STATUS_LABELS: Record<SkaterStatus, string> = {
+  active: 'Active',
+  inactive: 'Inactive',
+};
 
 export function SkaterDetailDrawer({ skaterId, onClose }: Props) {
   const [detail, setDetail] = useState<SkaterDetail | null>(null);
@@ -79,6 +85,13 @@ export function SkaterDetailDrawer({ skaterId, onClose }: Props) {
             <Typography variant="body2" sx={{ color: '#6B7A8D', mb: 1.5 }}>
               {detail.preferredName || detail.firstName} {detail.lastName}
             </Typography>
+
+            <DetailRow
+              icon={<CheckCircleOutlineIcon sx={{ fontSize: 18 }} />}
+              text={`Status: ${STATUS_LABELS[detail.status]}`}
+            />
+
+            <Divider sx={{ my: 1.5 }} />
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1 }}>
               <FamilyRestroomIcon sx={{ fontSize: 20, color: BRAND.navy }} />

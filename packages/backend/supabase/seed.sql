@@ -121,6 +121,11 @@ update public.profiles
 set likes = 'Speed skating', dislikes = 'Running laps', updated_at = now()
 where id = 'b2222222-2222-2222-2222-222222222222'; -- Corgi
 
+-- One inactive skater so the Derby 101 "Current Skaters" filter has something
+-- to actually filter out.
+update public.profiles set status = 'inactive', updated_at = now()
+where id = 'b4444444-4444-4444-4444-444444444444'; -- Roll Model
+
 -- ── Guardians ────────────────────────────────────────────────────────────────
 -- For the Skaters page detail drawer's guardian names/contact numbers.
 

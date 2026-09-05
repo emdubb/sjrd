@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { useRouter } from 'expo-router';
-import { Box, Typography, Tabs, Tab, Chip } from '@mui/material';
+import { Box, Typography, Tabs, Tab, Chip, TextField } from '@mui/material';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import { AppNav } from '../../src/components/AppNav';
@@ -8,7 +8,7 @@ import { CoachingBackHeader } from '../../src/components/CoachingBackHeader';
 import { SkaterRow } from '../../src/components/SkaterRow';
 import { SkaterDetailDrawer } from '../../src/components/SkaterDetailDrawer';
 import { BRAND, pillChipSx } from '../../src/lib/brand';
-import { fetchSkaters, type SkaterListItem } from '../../src/lib/skaters';
+import { fetchSkaters, filterSkaters, type SkaterListItem } from '../../src/lib/skaters';
 
 type DerbyTab = 'sessions' | 'curriculum' | 'skaters';
 
@@ -32,6 +32,7 @@ export default function TrainingProgramPage() {
   const router = useRouter();
   const [tab, setTab] = useState<DerbyTab>('sessions');
   const [currentOnly, setCurrentOnly] = useState(true);
+  const [search, setSearch] = useState('');
   const [skaters, setSkaters] = useState<SkaterListItem[]>([]);
   const [selectedSkaterId, setSelectedSkaterId] = useState<string | null>(null);
 
@@ -44,6 +45,8 @@ export default function TrainingProgramPage() {
   useEffect(() => {
     if (tab === 'skaters') loadSkaters(currentOnly);
   }, [tab, currentOnly, loadSkaters]);
+
+  const visibleSkaters = filterSkaters(skaters, search);
 
   return (
     <Box sx={{ bgcolor: '#fff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -88,6 +91,14 @@ export default function TrainingProgramPage() {
             overflowY: 'auto',
           }}
         >
+          <TextField
+            label="Search skaters"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            variant="outlined"
+            fullWidth
+          />
+
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
             <Chip
               label="Current Skaters"
@@ -101,12 +112,12 @@ export default function TrainingProgramPage() {
             />
           </Box>
 
-          {skaters.length === 0 ? (
+          {visibleSkaters.length === 0 ? (
             <Typography variant="body2" sx={{ color: '#9AABBD', py: 4, textAlign: 'center' }}>
-              No skaters found.
+              {skaters.length === 0 ? 'No skaters found.' : 'No skaters match your search.'}
             </Typography>
           ) : (
-            skaters.map((skater) => (
+            visibleSkaters.map((skater) => (
               <SkaterRow
                 key={skater.id}
                 skater={skater}

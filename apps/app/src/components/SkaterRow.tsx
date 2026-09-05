@@ -11,8 +11,8 @@ interface Props {
 }
 
 export function SkaterRow({ skater, onOpen }: Props) {
-  const attendanceLabel =
-    skater.attendanceRate === null ? 'No attendance data' : `${skater.attendanceRate}% attendance`;
+  const attendanceBadgeLabel =
+    skater.attendanceRate === null ? 'No data' : `${skater.attendanceRate}%`;
   const lastAttendedNote = skater.lastAttendedLabel
     ? `Last attended ${skater.lastAttendedLabel}`
     : 'Never attended';
@@ -35,51 +35,69 @@ export function SkaterRow({ skater, onOpen }: Props) {
         '&:hover': { boxShadow: '0 2px 12px rgba(0,0,0,0.08)' },
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-        <Box sx={{ minWidth: 0 }}>
+      <Box
+        sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}
+      >
+        <Box sx={{ minWidth: 0, flex: 1 }}>
           <Typography sx={{ fontWeight: 700, color: BRAND.navy, fontSize: '1rem' }}>
             {skater.name}
           </Typography>
+          <Typography variant="body2" sx={{ color: '#6B7A8D', mt: 0.25 }}>
+            {skater.teamName}
+          </Typography>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
-            <Typography variant="body2" sx={{ color: '#6B7A8D' }}>
-              {skater.teamName}
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{ color: skater.attendanceWarning ? '#E65100' : '#6B7A8D', fontWeight: 600 }}
+          {(skater.attendanceWarning || skater.hasAllergies) && (
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 0.75, flexWrap: 'wrap' }}
             >
-              {attendanceLabel}
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.75 }}>
-            {skater.attendanceWarning && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <WarningAmberIcon
-                  titleAccess="Hasn't attended practice in 2+ weeks"
-                  sx={{ fontSize: 18, color: '#E65100' }}
-                />
-                <Typography variant="body2" sx={{ color: '#E65100', fontWeight: 600 }}>
-                  {lastAttendedNote}
-                </Typography>
-              </Box>
-            )}
-            {skater.hasAllergies && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <HealthAndSafetyIcon
-                  titleAccess="Has allergies on file — view details"
-                  sx={{ fontSize: 18, color: '#C62828' }}
-                />
-                <Typography variant="body2" sx={{ color: '#C62828', fontWeight: 600 }}>
-                  Allergies
-                </Typography>
-              </Box>
-            )}
-          </Box>
+              {skater.attendanceWarning && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <WarningAmberIcon
+                    titleAccess="Hasn't attended practice in 2+ weeks"
+                    sx={{ fontSize: 18, color: '#E65100' }}
+                  />
+                  <Typography variant="body2" sx={{ color: '#E65100', fontWeight: 600 }}>
+                    {lastAttendedNote}
+                  </Typography>
+                </Box>
+              )}
+              {skater.hasAllergies && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <HealthAndSafetyIcon
+                    titleAccess="Has allergies on file — view details"
+                    sx={{ fontSize: 18, color: '#C62828' }}
+                  />
+                  <Typography variant="body2" sx={{ color: '#C62828', fontWeight: 600 }}>
+                    Allergies
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          )}
         </Box>
 
-        <ChevronRightIcon sx={{ color: '#9AABBD', flexShrink: 0 }} />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+          <Box
+            sx={{
+              px: 1.25,
+              py: 0.5,
+              borderRadius: 1.5,
+              bgcolor: skater.attendanceWarning ? '#FDEDE3' : BRAND.notifBg,
+            }}
+          >
+            <Typography
+              sx={{
+                fontWeight: 700,
+                fontSize: '0.875rem',
+                color: skater.attendanceWarning ? '#E65100' : BRAND.navy,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {attendanceBadgeLabel}
+            </Typography>
+          </Box>
+          <ChevronRightIcon sx={{ color: '#9AABBD' }} />
+        </Box>
       </Box>
     </ButtonBase>
   );

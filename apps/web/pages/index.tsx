@@ -1,97 +1,76 @@
-import { useEffect, useState } from 'react';
-import { supabase, type User } from '@sjrd/api-client';
+import PageShell from '../src/components/PageShell';
+import Button from '../src/components/Button';
+import FactStrip from '../src/components/FactStrip';
+import ImagePlaceholder from '../src/components/ImagePlaceholder';
+import PathwaySteps from '../src/components/PathwaySteps';
+import { QUICK_FACTS, PATHWAY_STEPS } from '../src/lib/programContent';
 
 export default function Home() {
-  const [user, setUser] = useState<User | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchUser() {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id, full_name, email')
-        .limit(1)
-        .single();
-
-      if (error) {
-        setError(error.message);
-        return;
-      }
-
-      setUser((data as User | null) ?? null);
-    }
-
-    fetchUser();
-  }, []);
-
   return (
-    <main
-      style={{
-        fontFamily: 'system-ui, sans-serif',
-        minHeight: '100vh',
-        background: '#0B233F',
-        color: '#FFFFFF',
-        padding: '4rem 1.5rem',
-      }}
+    <PageShell
+      eyebrow="Sacramento Junior Roller Derby"
+      title="A place for youth athletes to skate, learn, and lead."
+      description="The Beastie Bears are Sacramento Roller Derby's junior program — open gender, ages 8-17, and built on a clear path from first strides to competitive play."
     >
-      <section style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
-        <p
-          style={{
-            textTransform: 'uppercase',
-            letterSpacing: '0.24em',
-            color: '#F2BF35',
-            fontWeight: 700,
-          }}
-        >
-          Sacramento Junior Roller Derby
+      <div className="cta-row">
+        <Button href="/join">Join Now</Button>
+        <Button href="/events" variant="secondary">
+          See Practice Schedule
+        </Button>
+      </div>
+
+      <FactStrip facts={QUICK_FACTS} />
+
+      <section className="section">
+        <ImagePlaceholder label="Skaters on track action photo placeholder" aspectRatio="21 / 9" />
+      </section>
+
+      <section className="section">
+        <h2 className="section-title">A Clear Path Forward</h2>
+        <p className="section-body">
+          Every skater has a place to start and room to grow, from beginner fundamentals to
+          sanctioned competitive play.
         </p>
-        <h1 style={{ fontSize: 'clamp(3rem, 5vw, 5rem)', margin: '1rem 0', lineHeight: 1.05 }}>
-          A place for youth athletes to skate, learn, and lead.
-        </h1>
-        <p
-          style={{
-            margin: '1.5rem auto',
-            maxWidth: 600,
-            color: '#B9C2CC',
-            fontSize: '1.1rem',
-            lineHeight: 1.8,
-          }}
-        >
-          This landing page demonstrates the public site fetching backend data from Supabase. A
-          seeded user is loaded and shown below.
-        </p>
-        <div
-          style={{
-            margin: '2rem auto',
-            padding: '2rem',
-            background: '#112C56',
-            borderRadius: 24,
-            border: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          {error ? (
-            <p style={{ color: '#FF7A7A' }}>Error loading user: {error}</p>
-          ) : user ? (
-            <>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: '1rem',
-                  color: '#F2BF35',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.18em',
-                }}
-              >
-                Seeded Demo User
-              </p>
-              <h2 style={{ margin: '0.75rem 0 0', fontSize: '2rem' }}>Hello, {user.full_name}!</h2>
-              <p style={{ margin: '0.75rem 0 0', color: '#B9C2CC' }}>Your email is {user.email}.</p>
-            </>
-          ) : (
-            <p>Loading profile…</p>
-          )}
+        <PathwaySteps steps={PATHWAY_STEPS} />
+        <div className="teams-link">
+          <Button href="/teams" variant="secondary">
+            Meet Our Teams
+          </Button>
         </div>
       </section>
-    </main>
+
+      <style jsx>{`
+        .cta-row {
+          margin-top: 2.5rem;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1rem;
+          justify-content: center;
+        }
+
+        .section {
+          margin-top: 4rem;
+          text-align: center;
+        }
+
+        .section-title {
+          font-size: 1.75rem;
+          margin: 0 0 1rem;
+          color: #0b233f;
+        }
+
+        .section-body {
+          margin: 0 auto;
+          max-width: 640px;
+          font-size: 1.1rem;
+          line-height: 1.8;
+          color: rgba(11, 35, 63, 0.85);
+        }
+
+        .teams-link {
+          margin-top: 2rem;
+        }
+      `}</style>
+    </PageShell>
   );
 }

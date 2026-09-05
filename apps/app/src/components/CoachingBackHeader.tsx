@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Box, Typography, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { BRAND } from '../lib/brand';
@@ -5,9 +6,10 @@ import { BRAND } from '../lib/brand';
 interface Props {
   title: string;
   onBack: () => void;
+  action?: ReactNode;
 }
 
-export function CoachingBackHeader({ title, onBack }: Props) {
+export function CoachingBackHeader({ title, onBack, action }: Props) {
   return (
     <Box
       sx={{
@@ -51,6 +53,7 @@ export function CoachingBackHeader({ title, onBack }: Props) {
       >
         {title}
       </Typography>
+      {action && <Box sx={{ ml: 'auto', zIndex: 1 }}>{action}</Box>}
     </Box>
   );
 }
