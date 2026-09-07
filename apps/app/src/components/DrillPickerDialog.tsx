@@ -17,7 +17,7 @@ interface Props {
   open: boolean;
   excludeDrillIds: string[];
   onClose: () => void;
-  onSelect: (drillId: string) => void;
+  onSelect: (drill: Drill) => void;
 }
 
 export function DrillPickerDialog({ open, excludeDrillIds, onClose, onSelect }: Props) {
@@ -103,7 +103,7 @@ export function DrillPickerDialog({ open, excludeDrillIds, onClose, onSelect }: 
             <DrillRow
               key={drill.id}
               drill={drill}
-              onClick={() => onSelect(drill.id)}
+              onClick={() => onSelect(drill)}
               trailingIcon={
                 <AddCircleOutlineIcon sx={{ color: BRAND.navy, flexShrink: 0, fontSize: 26 }} />
               }

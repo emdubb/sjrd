@@ -20,18 +20,21 @@ export interface AppEvent {
   teamIds?: string[];
   startTimeRaw?: string;
   endTimeRaw?: string;
+  dateStartRaw: string;
+  dateEnd?: string;
 }
 
-type DbEventType = 'game' | 'practice' | 'scrimmage' | 'other';
+type DbEventType = 'game' | 'practice' | 'scrimmage' | 'other' | 'holiday';
 
 const EVENT_LABELS: Record<DbEventType, string> = {
   game: 'Game',
   practice: 'Practice',
   scrimmage: 'Scrimmage',
   other: 'Other',
+  holiday: 'Holiday',
 };
 
-const EVENT_TYPE_ORDER: DbEventType[] = ['practice', 'game', 'scrimmage', 'other'];
+const EVENT_TYPE_ORDER: DbEventType[] = ['practice', 'game', 'scrimmage', 'other', 'holiday'];
 export const EVENT_TYPE_LABELS: string[] = EVENT_TYPE_ORDER.map((t) => EVENT_LABELS[t]);
 
 const EVENT_COLORS: Record<DbEventType, string> = {
@@ -39,6 +42,7 @@ const EVENT_COLORS: Record<DbEventType, string> = {
   practice: BRAND.navy,
   scrimmage: BRAND.steel,
   other: BRAND.gold,
+  holiday: BRAND.holidayAccent,
 };
 
 const TYPE_TO_ENUM: Record<string, DbEventType> = {
@@ -46,6 +50,7 @@ const TYPE_TO_ENUM: Record<string, DbEventType> = {
   Game: 'game',
   Scrimmage: 'scrimmage',
   Other: 'other',
+  Holiday: 'holiday',
 };
 
 const DAY_ABBR = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
@@ -107,6 +112,7 @@ type EventRow = {
   event_type: DbEventType;
   status: 'scheduled' | 'cancelled';
   date_start: string;
+  date_end: string | null;
   start_time: string;
   end_time: string;
   description: string | null;
@@ -154,11 +160,13 @@ function rowToAppEvent(row: EventRow): AppEvent {
     teamIds,
     startTimeRaw: row.start_time.slice(0, 5),
     endTimeRaw: row.end_time.slice(0, 5),
+    dateStartRaw: row.date_start,
+    dateEnd: row.date_end ?? undefined,
   };
 }
 
 const EVENT_SELECT = `
-  id, title, event_type, status, date_start, start_time, end_time, description, series_id,
+  id, title, event_type, status, date_start, date_end, start_time, end_time, description, series_id,
   event_teams(team_id, teams(id, name)),
   event_series(recurrence_rule, series_date_end)
 ` as const;
@@ -170,15 +178,19 @@ export interface PagedEvents {
   hasMore: boolean;
 }
 
-export async function fetchEventsForMonth(
-  year: number,
-  month: number,
-  offset = 0
-): Promise<PagedEvents> {
+function monthDateBounds(year: number, month: number): { dateFrom: string; dateTo: string } {
   const pad = (n: number) => String(n).padStart(2, '0');
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const dateFrom = `${year}-${pad(month + 1)}-01`;
-  const dateTo = `${year}-${pad(month + 1)}-${pad(daysInMonth)}`;
+  return {
+    dateFrom: `${year}-${pad(month + 1)}-01`,
+    dateTo: `${year}-${pad(month + 1)}-${pad(daysInMonth)}`,
+  };
+}
+
+// Unpaginated: the month grid's day indicators need every event in the visible
+// month, not just a first page, or later dates would silently go unmarked.
+export async function fetchEventsForMonth(year: number, month: number): Promise<AppEvent[]> {
+  const { dateFrom, dateTo } = monthDateBounds(year, month);
 
   const { data, error } = await supabase
     .from('event_instances')
@@ -186,15 +198,56 @@ export async function fetchEventsForMonth(
     .gte('date_start', dateFrom)
     .lte('date_start', dateTo)
     .order('date_start')
-    .order('start_time')
-    .range(offset, offset + PAGE_SIZE);
+    .order('start_time');
 
   if (error) throw error;
-  const rows = data ?? [];
-  return {
-    events: rows.slice(0, PAGE_SIZE).map((row) => rowToAppEvent(row as unknown as EventRow)),
-    hasMore: rows.length > PAGE_SIZE,
-  };
+  return (data ?? []).map((row) => rowToAppEvent(row as unknown as EventRow));
+}
+
+// Holiday events can span multiple days, so one starting in an earlier month can still
+// color days in this month. Fetched separately since fetchEventsForMonth only matches
+// on date_start.
+export async function fetchHolidayEventsForMonth(year: number, month: number): Promise<AppEvent[]> {
+  const { dateFrom, dateTo } = monthDateBounds(year, month);
+
+  const { data, error } = await supabase
+    .from('event_instances')
+    .select(EVENT_SELECT)
+    .eq('event_type', 'holiday')
+    .neq('status', 'cancelled')
+    .lte('date_start', dateTo)
+    .gte('date_end', dateFrom);
+
+  if (error) throw error;
+  return (data ?? []).map((row) => rowToAppEvent(row as unknown as EventRow));
+}
+
+// Non-holiday events that overlap a proposed holiday's date range, so an admin can
+// choose to cancel the ones that conflict.
+export async function fetchConflictingEvents(
+  dateStart: string,
+  dateEnd: string
+): Promise<AppEvent[]> {
+  const { data, error } = await supabase
+    .from('event_instances')
+    .select(EVENT_SELECT)
+    .neq('event_type', 'holiday')
+    .neq('status', 'cancelled')
+    .gte('date_start', dateStart)
+    .lte('date_start', dateEnd)
+    .order('date_start');
+
+  if (error) throw error;
+  return (data ?? []).map((row) => rowToAppEvent(row as unknown as EventRow));
+}
+
+export async function cancelEvents(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const { error } = await supabase
+    .from('event_instances')
+    .update({ status: 'cancelled' })
+    .in('id', ids);
+  if (error) throw error;
 }
 
 export async function fetchUpcomingEvents(from: Date, offset = 0): Promise<PagedEvents> {
@@ -227,6 +280,7 @@ export async function fetchTeams(): Promise<{ id: string; name: string }[]> {
 export interface EventFormData {
   title: string;
   date: string;
+  dateEnd: string;
   startTime: string;
   endTime: string;
   recurrence: string;
@@ -370,7 +424,11 @@ export async function createEvent(formData: EventFormData): Promise<AppEvent> {
   if (formData.recurrence === 'none') {
     const { data: instance, error } = await supabase
       .from('event_instances')
-      .insert({ ...instanceBase, date_start: formData.date })
+      .insert({
+        ...instanceBase,
+        date_start: formData.date,
+        date_end: eventType === 'holiday' ? formData.dateEnd || formData.date : null,
+      })
       .select('id')
       .single();
     if (error) throw error;
@@ -418,6 +476,7 @@ export async function updateEvent(id: string, formData: EventFormData): Promise<
       title: formData.title,
       event_type: eventType,
       date_start: formData.date,
+      date_end: eventType === 'holiday' ? formData.dateEnd || formData.date : null,
       start_time: `${formData.startTime}:00`,
       end_time: `${formData.endTime}:00`,
       description: formData.description || null,

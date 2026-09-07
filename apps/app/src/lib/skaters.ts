@@ -1,6 +1,6 @@
 import { supabase } from '@sjrd/api-client';
 import { MONTH_NAMES } from './brand';
-import { shortName, type ProfileRow } from './practice';
+import { formatDisplayName, type ProfileRow } from './practice';
 
 const ATTENDANCE_WARNING_DAYS = 14;
 
@@ -24,7 +24,6 @@ export function filterSkaters(skaters: SkaterListItem[], search: string): Skater
 
 export interface GuardianContact {
   name: string;
-  lastName: string;
   phone: string | null;
 }
 
@@ -50,6 +49,7 @@ type TeamMemberRow = { team_id: string; teams: { id: string; name: string } | nu
 type SkaterProfileRow = {
   id: string;
   first_name: string;
+  last_name: string;
   preferred_name: string | null;
   derby_name: string | null;
   allergies: string | null;
@@ -58,7 +58,6 @@ type SkaterProfileRow = {
 };
 
 type SkaterDetailProfileRow = SkaterProfileRow & {
-  last_name: string;
   likes: string | null;
   dislikes: string | null;
 };
@@ -140,7 +139,7 @@ function computeAttendance(records: AttendanceRecord[] | undefined): {
 
 const SKATER_SELECT = `
   profiles!profile_user_types_profile_id_fkey(
-    id, first_name, preferred_name, derby_name, allergies, status,
+    id, first_name, last_name, preferred_name, derby_name, allergies, status,
     team_members!team_members_profile_id_fkey(team_id, teams(id, name))
   )
 `;
@@ -177,7 +176,7 @@ export async function fetchSkaters(filters: SkaterFilters): Promise<SkaterListIt
       );
       return {
         id: row.id,
-        name: shortName(row),
+        name: formatDisplayName(row),
         teamIds,
         teamName,
         attendanceRate: rate,
@@ -191,7 +190,7 @@ export async function fetchSkaters(filters: SkaterFilters): Promise<SkaterListIt
 }
 
 type GuardianRow = {
-  profiles: (ProfileRow & { last_name: string; phone: string | null }) | null;
+  profiles: (ProfileRow & { phone: string | null }) | null;
 };
 
 export async function fetchSkaterDetail(skaterId: string): Promise<SkaterDetail | null> {
@@ -224,14 +223,13 @@ export async function fetchSkaterDetail(skaterId: string): Promise<SkaterDetail 
   const guardians: GuardianContact[] = ((guardianResult.data ?? []) as unknown as GuardianRow[])
     .filter((r) => !!r.profiles)
     .map((r) => ({
-      name: shortName(r.profiles),
-      lastName: r.profiles!.last_name,
+      name: formatDisplayName(r.profiles),
       phone: r.profiles!.phone,
     }));
 
   return {
     id: row.id,
-    name: shortName(row),
+    name: formatDisplayName(row),
     firstName: row.first_name,
     preferredName: row.preferred_name,
     lastName: row.last_name,

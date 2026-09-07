@@ -1,4 +1,6 @@
 import { supabase } from '@sjrd/api-client';
+import { formatDisplayName } from './practice';
+import { attachGuardianSkaters, type SkaterAttachment } from './guardianSkaters';
 import type { UserType } from './userTypes';
 
 export type AdminUserSource = 'account' | 'pending';
@@ -9,7 +11,7 @@ export interface AdminUser {
   firstName: string;
   lastName: string;
   name: string;
-  email: string;
+  email: string | null;
   phone: string | null;
   userTypes: UserType[];
   teamIds: string[];
@@ -27,6 +29,8 @@ type ProfileAccountRow = {
   id: string;
   first_name: string;
   last_name: string;
+  preferred_name: string | null;
+  derby_name: string | null;
   status: string;
   invited_at: string | null;
   email: string;
@@ -37,7 +41,9 @@ type PendingUserRow = {
   id: string;
   first_name: string;
   last_name: string;
-  email: string;
+  preferred_name: string | null;
+  derby_name: string | null;
+  email: string | null;
   invited_at: string | null;
 };
 
@@ -73,7 +79,9 @@ export async function fetchAdminUsers(): Promise<AdminUser[]> {
     pendingTeamsResult,
   ] = await Promise.all([
     supabase.rpc('admin_list_profile_users'),
-    supabase.from('pending_users').select('id, first_name, last_name, email, invited_at'),
+    supabase
+      .from('pending_users')
+      .select('id, first_name, last_name, preferred_name, derby_name, email, invited_at'),
     supabase.from('profile_user_types').select('profile_id, user_type'),
     supabase.from('pending_user_types').select('pending_user_id, user_type'),
     supabase.from('team_members').select('profile_id, teams(id, name)'),
@@ -117,7 +125,7 @@ export async function fetchAdminUsers(): Promise<AdminUser[]> {
       source: 'account',
       firstName: row.first_name,
       lastName: row.last_name,
-      name: `${row.first_name} ${row.last_name}`,
+      name: formatDisplayName(row),
       email: row.email,
       phone: row.phone,
       userTypes: typesByProfile.get(row.id) ?? [],
@@ -135,7 +143,7 @@ export async function fetchAdminUsers(): Promise<AdminUser[]> {
       source: 'pending',
       firstName: row.first_name,
       lastName: row.last_name,
-      name: `${row.first_name} ${row.last_name}`,
+      name: formatDisplayName(row),
       email: row.email,
       phone: null,
       userTypes: typesByPending.get(row.id) ?? [],
@@ -153,14 +161,23 @@ export interface NewPendingUserInput {
   firstName: string;
   lastName: string;
   email: string;
+  preferredName?: string;
+  derbyName?: string;
   userTypes: UserType[];
   teamIds: string[];
+  skaters?: SkaterAttachment[];
 }
 
 export async function addPendingUser(input: NewPendingUserInput): Promise<void> {
   const { data, error } = await supabase
     .from('pending_users')
-    .insert({ first_name: input.firstName, last_name: input.lastName, email: input.email })
+    .insert({
+      first_name: input.firstName,
+      last_name: input.lastName,
+      email: input.email,
+      preferred_name: input.preferredName || null,
+      derby_name: input.derbyName || null,
+    })
     .select('id')
     .single();
   if (error) throw error;
@@ -186,6 +203,10 @@ export async function addPendingUser(input: NewPendingUserInput): Promise<void> 
   ]);
   if (typesResult.error) throw typesResult.error;
   if (teamsResult.error) throw teamsResult.error;
+
+  if (input.skaters && input.skaters.length > 0) {
+    await attachGuardianSkaters(pendingUserId, input.skaters);
+  }
 }
 
 export async function invitePendingUser(pendingUserId: string): Promise<void> {
@@ -275,6 +296,9 @@ export function filterAdminUsers(
   return users
     .filter((u) => !typeFilter || u.userTypes.includes(typeFilter))
     .filter(
-      (u) => !query || u.name.toLowerCase().includes(query) || u.email.toLowerCase().includes(query)
+      (u) =>
+        !query ||
+        u.name.toLowerCase().includes(query) ||
+        (u.email ?? '').toLowerCase().includes(query)
     );
 }

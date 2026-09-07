@@ -1,6 +1,6 @@
 import { supabase } from '@sjrd/api-client';
 import { BRAND } from './brand';
-import { shortName, type ProfileRow } from './practice';
+import { formatDisplayName, type ProfileRow } from './practice';
 
 export type DrillType = 'jamming' | 'blocking' | 'offense';
 
@@ -88,7 +88,7 @@ export function rowToDrill(row: DrillDbRow): Drill {
     types: row.drill_drill_types.map((t) => t.drill_type),
     categories: row.drill_drill_categories.map((c) => c.drill_category),
     equipment: row.drill_drill_equipment.map((e) => e.drill_equipment),
-    createdByName: row.profiles ? shortName(row.profiles) : null,
+    createdByName: row.profiles ? formatDisplayName(row.profiles) : null,
   };
 }
 
@@ -97,7 +97,7 @@ export const DRILL_SELECT = `
   drill_drill_types(drill_type),
   drill_drill_categories(drill_category),
   drill_drill_equipment(drill_equipment),
-  profiles!drills_created_by_fkey(first_name, preferred_name, derby_name)
+  profiles!drills_created_by_fkey(first_name, last_name, preferred_name, derby_name)
 ` as const;
 
 export interface DrillSearchFilters {

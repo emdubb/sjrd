@@ -15,8 +15,10 @@ export default function PathwaySteps({ steps }: PathwayStepsProps) {
         <li key={step.name} className="step">
           <div className="step-card">
             <p className="tag">{step.tag}</p>
-            <h3 className="name">{step.name}</h3>
-            <p className="description">{step.description}</p>
+            <div className="card-body">
+              <h3 className="name">{step.name}</h3>
+              <p className="description">{step.description}</p>
+            </div>
           </div>
           {index < steps.length - 1 && (
             <span className="arrow" aria-hidden="true">
@@ -40,15 +42,17 @@ export default function PathwaySteps({ steps }: PathwayStepsProps) {
 
         .step {
           display: flex;
-          align-items: center;
+          align-items: stretch;
           gap: 1rem;
         }
 
         .step-card {
+          display: flex;
+          flex-direction: column;
           background: #ffffff;
           color: #0b233f;
           border-radius: 16px;
-          padding: 1.5rem;
+          overflow: hidden;
           width: 220px;
           text-align: left;
           border: 1px solid rgba(11, 35, 63, 0.08);
@@ -62,21 +66,29 @@ export default function PathwaySteps({ steps }: PathwayStepsProps) {
         }
 
         .tag {
-          display: inline-block;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 2.75rem;
           margin: 0;
-          padding: 0.2rem 0.6rem;
+          padding: 0.4rem 1rem;
           background: #0b233f;
-          border-radius: 999px;
           text-transform: uppercase;
-          letter-spacing: 0.1em;
+          letter-spacing: 0.06em;
           font-size: 0.875rem;
           font-weight: 700;
           color: #ffffff;
-          transform: rotate(-1.5deg);
+          text-align: center;
+          line-height: 1.3;
+        }
+
+        .card-body {
+          flex: 1;
+          padding: 1.5rem;
         }
 
         .name {
-          margin: 0.5rem 0;
+          margin: 0 0 0.5rem;
           font-size: 1.3rem;
         }
 
@@ -89,6 +101,7 @@ export default function PathwaySteps({ steps }: PathwayStepsProps) {
 
         .arrow {
           flex-shrink: 0;
+          align-self: center;
           display: flex;
           align-items: center;
           justify-content: center;

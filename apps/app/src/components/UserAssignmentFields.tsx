@@ -1,21 +1,26 @@
 import { Box, Typography, Chip } from '@mui/material';
+import { TeamChipsField } from './TeamChipsField';
 import { BRAND, pillChipSx } from '../lib/brand';
 import { USER_TYPE_ORDER, USER_TYPE_LABELS, type UserType } from '../lib/userTypes';
 
 interface Props {
   userTypes: UserType[];
   onToggleUserType: (type: UserType) => void;
-  teams: { id: string; name: string }[];
-  teamIds: string[];
-  onToggleTeam: (teamId: string) => void;
+  teams?: { id: string; name: string }[];
+  teamIds?: string[];
+  onToggleTeam?: (teamId: string) => void;
+  userTypeOptions?: UserType[];
+  showTeams?: boolean;
 }
 
 export function UserAssignmentFields({
   userTypes,
   onToggleUserType,
-  teams,
-  teamIds,
-  onToggleTeam,
+  teams = [],
+  teamIds = [],
+  onToggleTeam = () => {},
+  userTypeOptions = USER_TYPE_ORDER,
+  showTeams = true,
 }: Props) {
   return (
     <>
@@ -24,7 +29,7 @@ export function UserAssignmentFields({
           Role Types
         </Typography>
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-          {USER_TYPE_ORDER.map((type) => (
+          {userTypeOptions.map((type) => (
             <Chip
               key={type}
               label={USER_TYPE_LABELS[type]}
@@ -35,27 +40,7 @@ export function UserAssignmentFields({
         </Box>
       </Box>
 
-      <Box>
-        <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: BRAND.navy, mb: 1 }}>
-          Team
-        </Typography>
-        {teams.length === 0 ? (
-          <Typography variant="body2" sx={{ color: '#9AABBD' }}>
-            No teams set up yet.
-          </Typography>
-        ) : (
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            {teams.map((team) => (
-              <Chip
-                key={team.id}
-                label={team.name}
-                onClick={() => onToggleTeam(team.id)}
-                sx={pillChipSx(teamIds.includes(team.id))}
-              />
-            ))}
-          </Box>
-        )}
-      </Box>
+      {showTeams && <TeamChipsField teams={teams} teamIds={teamIds} onToggleTeam={onToggleTeam} />}
     </>
   );
 }

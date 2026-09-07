@@ -8,8 +8,15 @@ interface ButtonProps {
 }
 
 export default function Button({ href, variant = 'primary', children }: ButtonProps) {
+  const isExternal = /^https?:\/\//.test(href);
+
   return (
-    <Link href={href} className={`btn btn-${variant}`}>
+    <Link
+      href={href}
+      className={`btn btn-${variant}`}
+      target={isExternal ? '_blank' : undefined}
+      rel={isExternal ? 'noopener noreferrer' : undefined}
+    >
       {children}
       <span className="arrow" aria-hidden="true">
         →

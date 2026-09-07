@@ -17,16 +17,21 @@ export interface PracticeEvent {
   assistantIds: string[];
   assistantNames: string[];
   hasCoach: boolean;
+  location: string | null;
+  trainingSessionId: string | null;
+  sessionWeekNumber: number | null;
 }
 
 export type ProfileRow = {
   first_name: string;
+  last_name: string;
   preferred_name: string | null;
   derby_name: string | null;
 };
 type EventCoachRow = { profile_id: string; is_primary: boolean; profiles: ProfileRow | null };
 type TeamRow = { id: string; name: string } | null;
 type EventTeamRow = { team_id: string; teams: TeamRow };
+type LocationRow = { name: string; address: string | null } | null;
 
 type PracticeRow = {
   id: string;
@@ -36,13 +41,17 @@ type PracticeRow = {
   date_start: string;
   start_time: string;
   end_time: string;
+  training_session_id: string | null;
+  session_week_number: number | null;
+  locations: LocationRow;
   event_teams: EventTeamRow[];
   event_coaches: EventCoachRow[];
 };
 
-export function shortName(profile: ProfileRow | null): string {
+export function formatDisplayName(profile: ProfileRow | null): string {
   if (!profile) return 'Unknown';
-  return profile.derby_name || profile.preferred_name || profile.first_name;
+  const legalName = `${profile.preferred_name || profile.first_name} ${profile.last_name}`;
+  return profile.derby_name ? `${profile.derby_name} (${legalName})` : legalName;
 }
 
 function rowToPracticeEvent(row: PracticeRow): PracticeEvent {
@@ -70,17 +79,21 @@ function rowToPracticeEvent(row: PracticeRow): PracticeEvent {
     team,
     teamIds,
     coachId: primaryCoach ? primaryCoach.profile_id : null,
-    coachName: primaryCoach ? shortName(primaryCoach.profiles) : null,
+    coachName: primaryCoach ? formatDisplayName(primaryCoach.profiles) : null,
     assistantIds: assistantCoaches.map((c) => c.profile_id),
-    assistantNames: assistantCoaches.map((c) => shortName(c.profiles)),
+    assistantNames: assistantCoaches.map((c) => formatDisplayName(c.profiles)),
     hasCoach: !!primaryCoach,
+    location: row.locations ? row.locations.name : null,
+    trainingSessionId: row.training_session_id,
+    sessionWeekNumber: row.session_week_number,
   };
 }
 
 const practiceSelect = (teamId: string | null) => `
   id, title, description, notes, date_start, start_time, end_time,
+  training_session_id, session_week_number, locations(name, address),
   event_teams${teamId ? '!inner' : ''}(team_id, teams(id, name)),
-  event_coaches(profile_id, is_primary, profiles!event_coaches_profile_id_fkey(first_name, preferred_name, derby_name))
+  event_coaches(profile_id, is_primary, profiles!event_coaches_profile_id_fkey(first_name, last_name, preferred_name, derby_name))
 `;
 
 const PAGE_SIZE = 15;
@@ -117,7 +130,8 @@ export async function fetchPracticeSchedule(
     .from('event_instances')
     .select(practiceSelect(filters.teamId))
     .eq('event_type', 'practice')
-    .neq('status', 'cancelled');
+    .neq('status', 'cancelled')
+    .is('training_session_id', null);
 
   query =
     scope === 'upcoming'
@@ -151,6 +165,16 @@ export async function fetchPracticeSchedule(
   };
 }
 
+export async function fetchSessionPractices(): Promise<PracticeEvent[]> {
+  const { data, error } = await supabase
+    .from('event_instances')
+    .select(practiceSelect(null))
+    .not('training_session_id', 'is', null)
+    .order('date_start', { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((row) => rowToPracticeEvent(row as unknown as PracticeRow));
+}
+
 export interface CoachOption {
   id: string;
   name: string;
@@ -162,14 +186,14 @@ export async function fetchCoaches(): Promise<CoachOption[]> {
   const { data, error } = await supabase
     .from('profile_user_types')
     .select(
-      'profile_id, profiles!profile_user_types_profile_id_fkey(first_name, preferred_name, derby_name)'
+      'profile_id, profiles!profile_user_types_profile_id_fkey(first_name, last_name, preferred_name, derby_name)'
     )
     .eq('user_type', 'coach');
   if (error) throw error;
   return (data ?? [])
     .map((row) => {
       const { profile_id: profileId, profiles } = row as unknown as CoachProfileRow;
-      return { id: profileId, name: shortName(profiles) };
+      return { id: profileId, name: formatDisplayName(profiles) };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
 }

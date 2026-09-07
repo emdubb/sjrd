@@ -1,20 +1,25 @@
 import ImagePlaceholder from './ImagePlaceholder';
 
 interface CoachCardProps {
-  name: string;
+  displayName: string;
+  legalName: string;
+  pronouns: string;
   role: string;
-  bio: string;
+  bio?: string;
 }
 
-export default function CoachCard({ name, role, bio }: CoachCardProps) {
+export default function CoachCard({ displayName, legalName, pronouns, role, bio }: CoachCardProps) {
   return (
     <article className="card">
       <div className="media">
-        <ImagePlaceholder label={`${name} headshot placeholder`} aspectRatio="1 / 1" />
+        <ImagePlaceholder label={`${displayName} headshot placeholder`} aspectRatio="1 / 1" />
         <span className="tag">{role}</span>
       </div>
-      <h3 className="name">{name}</h3>
-      <p className="bio">{bio}</p>
+      <h3 className="name">{displayName}</h3>
+      <p className="meta">
+        {legalName} ({pronouns})
+      </p>
+      {bio ? <p className="bio">{bio}</p> : <p className="bio bio-pending">Bio coming soon.</p>}
 
       <style jsx>{`
         .card {
@@ -47,15 +52,17 @@ export default function CoachCard({ name, role, bio }: CoachCardProps) {
           bottom: -1rem;
           transform: translateX(-50%);
           display: inline-block;
+          width: max-content;
+          max-width: calc(100% - 1rem);
           padding: 0.4rem 0.9rem;
           background: #0b233f;
           color: #ffffff;
-          border-radius: 999px;
+          border-radius: 20px;
           text-transform: uppercase;
           letter-spacing: 0.08em;
           font-size: 0.875rem;
           font-weight: 700;
-          white-space: nowrap;
+          text-align: center;
           box-shadow: 0 6px 14px rgba(11, 35, 63, 0.3);
           transition: background 0.2s ease, color 0.2s ease;
         }
@@ -71,12 +78,25 @@ export default function CoachCard({ name, role, bio }: CoachCardProps) {
           text-align: center;
         }
 
+        .meta {
+          margin: 0 0 1rem;
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: rgba(11, 35, 63, 0.65);
+          text-align: center;
+        }
+
         .bio {
           margin: 0;
           font-size: 1rem;
           line-height: 1.7;
           color: rgba(11, 35, 63, 0.85);
           text-align: center;
+        }
+
+        .bio-pending {
+          font-style: italic;
+          color: rgba(11, 35, 63, 0.65);
         }
       `}</style>
     </article>

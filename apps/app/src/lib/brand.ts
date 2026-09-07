@@ -6,6 +6,9 @@ export const BRAND = {
   steel: '#3D6B9E',
   amber: '#C49A00',
   notifBg: '#EAF0F8',
+  todayBg: 'rgba(242, 191, 53, 0.2)',
+  holidayBlue: '#BEE3F8',
+  holidayAccent: '#2C7BB6',
 } as const;
 
 export const MONTH_NAMES = [
@@ -24,6 +27,13 @@ export const MONTH_NAMES = [
 ];
 
 export const formatEventDate = (e: AppEvent) => `${MONTH_NAMES[e.month].slice(0, 3)} ${e.day}`;
+
+export const formatEventDateRange = (e: AppEvent): string => {
+  if (!e.dateEnd || e.dateEnd === e.dateStartRaw) return formatEventDate(e);
+  const [endYear, endMonth, endDay] = e.dateEnd.split('-').map(Number);
+  const endLabel = `${MONTH_NAMES[endMonth - 1].slice(0, 3)} ${endDay}, ${endYear}`;
+  return `${formatEventDate(e)} – ${endLabel}`;
+};
 
 export const pillChipSx = (selected: boolean) => ({
   borderRadius: '50px',

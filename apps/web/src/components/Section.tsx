@@ -4,16 +4,18 @@ interface SectionProps {
   tone?: 'light' | 'tint' | 'dark';
   children: ReactNode;
   narrow?: boolean;
+  id?: string;
 }
 
-export default function Section({ tone = 'light', children, narrow = false }: SectionProps) {
+export default function Section({ tone = 'light', children, narrow = false, id }: SectionProps) {
   return (
-    <section className={`section section-${tone}`}>
+    <section id={id} className={`section section-${tone}`}>
       <div className={`inner ${narrow ? 'inner-narrow' : ''}`}>{children}</div>
 
       <style jsx>{`
         .section {
           padding: 4rem 1.5rem;
+          scroll-margin-top: 72px;
         }
 
         .section-light {

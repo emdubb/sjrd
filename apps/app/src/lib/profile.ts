@@ -1,9 +1,11 @@
 import { supabase } from '@sjrd/api-client';
+import { formatDisplayName } from './practice';
 
 export type ProfileStatus = 'active' | 'inactive';
 
 export interface MyProfile {
   id: string;
+  displayName: string;
   firstName: string;
   lastName: string;
   preferredName: string | null;
@@ -78,6 +80,7 @@ export async function fetchMyProfile(): Promise<MyProfile> {
 
   return {
     id: row.id,
+    displayName: formatDisplayName(row),
     firstName: row.first_name,
     lastName: row.last_name,
     preferredName: row.preferred_name,

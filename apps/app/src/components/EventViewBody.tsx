@@ -23,7 +23,15 @@ interface Props {
 export function EventViewBody({ event }: Props) {
   const cancelled = !!event.cancelled;
   const accentColor = getAccentColor(event);
-  const dateLabel = `${MONTH_NAMES[event.month]} ${event.day}, ${event.year}`;
+  const isHoliday = event.type === 'Holiday';
+  const startLabel = `${MONTH_NAMES[event.month]} ${event.day}, ${event.year}`;
+  const dateLabel =
+    event.dateEnd && event.dateEnd !== event.dateStartRaw
+      ? (() => {
+          const [ey, em, ed] = event.dateEnd!.split('-').map(Number);
+          return `${startLabel} – ${MONTH_NAMES[em - 1]} ${ed}, ${ey}`;
+        })()
+      : startLabel;
 
   return (
     <Box sx={{ px: 3, pt: 0.5, pb: 3 }}>
@@ -55,12 +63,16 @@ export function EventViewBody({ event }: Props) {
 
       {/* Details */}
       <Box>
-        <DetailRow icon={<AccessTimeIcon sx={{ fontSize: 18 }} />} text={event.time} />
-        <DetailRow
-          icon={<LocationOnIcon sx={{ fontSize: 18 }} />}
-          text={event.location ?? DEFAULT_LOCATION}
-        />
-        <DetailRow icon={<GroupIcon sx={{ fontSize: 18 }} />} text={event.team} />
+        {!isHoliday && (
+          <>
+            <DetailRow icon={<AccessTimeIcon sx={{ fontSize: 18 }} />} text={event.time} />
+            <DetailRow
+              icon={<LocationOnIcon sx={{ fontSize: 18 }} />}
+              text={event.location ?? DEFAULT_LOCATION}
+            />
+            <DetailRow icon={<GroupIcon sx={{ fontSize: 18 }} />} text={event.team} />
+          </>
+        )}
         {event.recurrence && event.recurrence !== 'none' && (
           <DetailRow
             icon={<RepeatIcon sx={{ fontSize: 18 }} />}

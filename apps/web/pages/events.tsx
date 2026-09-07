@@ -1,6 +1,7 @@
 import Hero from '../src/components/Hero';
 import Section from '../src/components/Section';
 import EventCard from '../src/components/EventCard';
+import Button from '../src/components/Button';
 import { LOCATION } from '../src/lib/programContent';
 
 const PLACEHOLDER_EVENTS = [
@@ -27,8 +28,20 @@ export default function Events() {
       <Hero
         eyebrow="Events"
         title="Events"
-        description={`Home games and tournaments are held at ${LOCATION.name}, ${LOCATION.address}. Practice schedules are shared with registered families.`}
+        description={`Home games and tournaments are held at ${LOCATION.name}, ${LOCATION.address}.`}
       />
+
+      <Section tone="light">
+        <h2 className="section-title">Training Sessions</h2>
+        <p className="note">
+          New to derby? Our Derby 101 and Derby 201 training sessions are the best place for
+          skaters to build foundational skills. Practice schedules are shared with registered
+          families.
+        </p>
+        <div className="cta">
+          <Button href="/join">Join a Training Session</Button>
+        </div>
+      </Section>
 
       <Section tone="tint">
         <h2 className="section-title">Upcoming Games & Tournaments</h2>
@@ -40,6 +53,11 @@ export default function Events() {
           {PLACEHOLDER_EVENTS.map((event) => (
             <EventCard key={event.title} {...event} />
           ))}
+        </div>
+        <div className="cta">
+          <Button href="https://www.sacramentorollerderby.com/events" variant="secondary">
+            View Full Events Calendar
+          </Button>
         </div>
       </Section>
 
@@ -64,6 +82,11 @@ export default function Events() {
           grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
           gap: 1.5rem;
           margin-top: 2rem;
+        }
+
+        .cta {
+          margin-top: 2rem;
+          text-align: center;
         }
       `}</style>
     </>

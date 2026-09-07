@@ -45,7 +45,10 @@ export function AdminUserViewBody({ user }: { user: AdminUser }) {
 
       {showContact && (
         <Box sx={{ mb: 0.5 }}>
-          <DetailRow icon={<MailOutlineIcon sx={{ fontSize: 18 }} />} text={user.email} />
+          <DetailRow
+            icon={<MailOutlineIcon sx={{ fontSize: 18 }} />}
+            text={user.email || 'No email on file'}
+          />
           {user.source === 'account' && (
             <DetailRow
               icon={<PhoneOutlinedIcon sx={{ fontSize: 18 }} />}

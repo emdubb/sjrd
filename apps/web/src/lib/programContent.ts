@@ -18,7 +18,7 @@ export const PATHWAY_STEPS = [
   },
   {
     name: 'Intergalactic',
-    tag: 'Development Team',
+    tag: 'Recreational Team',
     description:
       'Fosters a fun, competitive environment that builds the skills skaters need to be ready for higher-level play.',
   },
@@ -30,27 +30,30 @@ export const PATHWAY_STEPS = [
   },
 ];
 
-export const TEAMS = [
+export const TRAINING_TEAMS = [
   {
     name: 'Derby 101',
-    tag: 'Training Program · Beginner',
+    tag: 'Beginner',
     ageNote: 'Open to all youth, ages 8-17',
     description:
       'No prior skills required. Skaters build basic skating skills, safety habits, and learn foundational roller derby concepts.',
   },
   {
     name: 'Derby 201',
-    tag: 'Training Program · Invitation Only',
+    tag: 'Invitation Only',
     ageNote: 'Requires completion of Derby 101',
     description:
       'Skaters learn roller derby gameplay and full contact to prepare for joining the Intergalactic team.',
   },
+];
+
+export const COMPETITIVE_TEAMS = [
   {
     name: 'Intergalactic',
-    tag: 'Development Team',
+    tag: 'Recreational Team',
     ageNote: 'Ages 8-17',
     description:
-      'Our development team, building the skills skaters need to be ready for higher-level, competitive play.',
+      'Our recreational team, building the skills skaters need to be ready for higher-level, competitive play.',
   },
   {
     name: 'Sabotage',
@@ -63,54 +66,81 @@ export const TEAMS = [
 
 export const COACHES = [
   {
-    name: 'Coach Name Placeholder',
-    role: 'Head Coach',
-    bio: 'Add a short bio here — derby name, background, and what they love about coaching the Beastie Bears.',
+    displayName: 'Coach Bull Doze-Her',
+    legalName: 'Melissa Wilcox',
+    pronouns: 'they/she',
+    role: 'Junior Program Head Coach',
+    bio: 'Bull has been with SRD since 2019 — a skater with Kodiak Attack, an official on and off skates, and now the driving force behind the Junior Beastie Bears program. A coach with the junior program since 2023, Bull is passionate about sports that celebrate all body types, where every type has its own strength. Their favorite skill to teach is endurance — a foundational building block of derby that also teaches confidence and resilience.',
   },
   {
-    name: 'Coach Name Placeholder',
-    role: 'Assistant Coach',
-    bio: 'Add a short bio here — derby name, background, and what they love about coaching the Beastie Bears.',
+    displayName: 'Coach Billie the Squid',
+    legalName: 'Abby Pratt',
+    pronouns: 'she/her',
+    role: 'Sabotage Head Coach',
+    bio: 'Squid started roller derby in 2018, playing in Louisiana, Illinois, and Missouri before transferring to SRD in 2024. While she loves playing herself, coaching is where she really finds her derby joy — striving to create a safe space where kids of all ages can be themselves and find their confidence. Her favorite skill to teach is strategy, watching skaters have that aha moment.',
   },
   {
-    name: 'Coach Name Placeholder',
-    role: 'Assistant Coach',
-    bio: 'Add a short bio here — derby name, background, and what they love about coaching the Beastie Bears.',
+    displayName: 'Coach Quista',
+    legalName: 'Paula Levitt',
+    pronouns: 'she/her',
+    role: 'Sabotage Coach',
+  },
+  {
+    displayName: 'Coach Lazer Wolf',
+    legalName: 'Justin Emery',
+    pronouns: 'he/him',
+    role: 'Intergalactic Head Coach',
+  },
+  {
+    displayName: 'Coach Braveheart',
+    legalName: 'Zevi Lev Horwitz',
+    pronouns: 'he/him',
+    role: 'Derby 101/201 Program Head Coach',
+  },
+  {
+    displayName: 'Coach Reign of Tara',
+    legalName: 'Tara Swick',
+    pronouns: 'she/her',
+    role: 'Intergalactic & Derby 101/201 Program Coach',
+    bio: 'Tara has been involved with SRD since her first 101 in 2023 and now plays with the Kodiaks. She started coaching the Beastie Bears and assisting the junior 101 program in 2024. She believes every great skater starts with a solid foundation, and her favorite skill to teach is balance — the essential "secret sauce" for staying upright, agile, and powerful on eight wheels.',
+  },
+  {
+    displayName: 'BamBOO',
+    legalName: 'Michelle Ng',
+    pronouns: 'she/her',
+    role: 'Derby 101/201 Program Coach',
   },
 ];
 
 export const QUICK_FACTS = [
   { label: 'Ages', value: '8-17 (18 by exception)' },
   { label: 'Program', value: 'Open gender' },
-  { label: 'League', value: 'JRDA member' },
-  { label: 'Home', value: LOCATION.name },
+  { label: 'Association', value: 'JRDA member' },
 ];
 
-export const JOIN_STEPS = [
+export const JOIN_PATHS = [
   {
-    title: 'Try out or reach out',
+    tag: 'New to Roller Derby',
+    title: 'Start with Derby 101',
     description:
-      'Contact us to learn about upcoming tryouts and get your skater started. New and returning skaters are both welcome.',
+      "Never played roller derby before? Start here — even skaters with general skating experience must complete Derby 101 to learn derby-specific rules, safety, and gameplay before joining a team.",
+    cta: {
+      type: 'scroll' as const,
+      label: 'Registration is just below',
+      href: '#register',
+    },
   },
   {
-    title: 'Complete required forms',
+    tag: 'Experienced Roller Derby Skater',
+    title: 'Contact Us',
     description:
-      'JRDA Player Registration, League Member Info Form, and confirmation of Handbook receipt are required. An Image and Likeness Release is optional.',
-  },
-  {
-    title: 'Set up dues',
-    description:
-      'Dues are $41 per month plus a $1 PayPal processing fee. Automatic payments are available if you prefer.',
-  },
-  {
-    title: 'Get geared up',
-    description:
-      'New skaters can use loaner gear from the 101 program at the warehouse. Ask about our rental program if you would like to use gear outside of practice.',
-  },
-  {
-    title: 'Get connected',
-    description:
-      'You will be added to the junior skaters email list automatically. Skaters may optionally join our Discord server, at the guardian’s discretion.',
+      'Transferring from another roller derby league? Reach out to us directly so we can get your skater set up quickly.',
+    cta: {
+      type: 'button' as const,
+      label: 'Contact Us',
+      href: 'mailto:juniorcoaches@sacramentorollerderby.com',
+      variant: 'primary' as const,
+    },
   },
 ];
 

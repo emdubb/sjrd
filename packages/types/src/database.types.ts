@@ -67,6 +67,110 @@ export type Database = {
           },
         ];
       };
+      curriculum: {
+        Row: {
+          content: string | null;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          updated_at: string;
+          updated_by: string | null;
+          week_number: number;
+        };
+        Insert: {
+          content?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          week_number: number;
+        };
+        Update: {
+          content?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          week_number?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'curriculum_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'curriculum_updated_by_fkey';
+            columns: ['updated_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      curriculum_drills: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          curriculum_id: string;
+          drill_id: string;
+          position: number;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          curriculum_id: string;
+          drill_id: string;
+          position?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          curriculum_id?: string;
+          drill_id?: string;
+          position?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'curriculum_drills_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'curriculum_drills_curriculum_id_fkey';
+            columns: ['curriculum_id'];
+            isOneToOne: false;
+            referencedRelation: 'curriculum';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'curriculum_drills_drill_id_fkey';
+            columns: ['drill_id'];
+            isOneToOne: false;
+            referencedRelation: 'drills';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'curriculum_drills_updated_by_fkey';
+            columns: ['updated_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       drill_drill_types: {
         Row: {
           created_at: string;
@@ -233,6 +337,68 @@ export type Database = {
           },
         ];
       };
+      event_curriculum: {
+        Row: {
+          content: string | null;
+          created_at: string;
+          created_by: string | null;
+          event_id: string;
+          source_curriculum_id: string | null;
+          updated_at: string;
+          updated_by: string | null;
+          week_number: number;
+        };
+        Insert: {
+          content?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          event_id: string;
+          source_curriculum_id?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+          week_number: number;
+        };
+        Update: {
+          content?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          event_id?: string;
+          source_curriculum_id?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+          week_number?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'event_curriculum_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'event_curriculum_event_id_fkey';
+            columns: ['event_id'];
+            isOneToOne: true;
+            referencedRelation: 'event_instances';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'event_curriculum_source_curriculum_id_fkey';
+            columns: ['source_curriculum_id'];
+            isOneToOne: false;
+            referencedRelation: 'curriculum';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'event_curriculum_updated_by_fkey';
+            columns: ['updated_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       event_instances: {
         Row: {
           created_at: string;
@@ -247,10 +413,12 @@ export type Database = {
           notes: string | null;
           original_start_time: string | null;
           series_id: string | null;
+          session_week_number: number | null;
           start_time: string;
           status: Database['public']['Enums']['event_status'];
           title: string;
           topics: string | null;
+          training_session_id: string | null;
           updated_at: string;
           updated_by: string | null;
         };
@@ -267,10 +435,12 @@ export type Database = {
           notes?: string | null;
           original_start_time?: string | null;
           series_id?: string | null;
+          session_week_number?: number | null;
           start_time: string;
           status?: Database['public']['Enums']['event_status'];
           title: string;
           topics?: string | null;
+          training_session_id?: string | null;
           updated_at?: string;
           updated_by?: string | null;
         };
@@ -287,10 +457,12 @@ export type Database = {
           notes?: string | null;
           original_start_time?: string | null;
           series_id?: string | null;
+          session_week_number?: number | null;
           start_time?: string;
           status?: Database['public']['Enums']['event_status'];
           title?: string;
           topics?: string | null;
+          training_session_id?: string | null;
           updated_at?: string;
           updated_by?: string | null;
         };
@@ -314,6 +486,13 @@ export type Database = {
             columns: ['series_id'];
             isOneToOne: false;
             referencedRelation: 'event_series';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'event_instances_training_session_id_fkey';
+            columns: ['training_session_id'];
+            isOneToOne: false;
+            referencedRelation: 'training_sessions';
             referencedColumns: ['id'];
           },
           {
@@ -688,6 +867,75 @@ export type Database = {
           },
         ];
       };
+      pending_user_guardians: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          guardian_pending_user_id: string;
+          id: string;
+          skater_pending_user_id: string | null;
+          skater_profile_id: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          guardian_pending_user_id: string;
+          id?: string;
+          skater_pending_user_id?: string | null;
+          skater_profile_id?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          guardian_pending_user_id?: string;
+          id?: string;
+          skater_pending_user_id?: string | null;
+          skater_profile_id?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'pending_user_guardians_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'pending_user_guardians_guardian_pending_user_id_fkey';
+            columns: ['guardian_pending_user_id'];
+            isOneToOne: false;
+            referencedRelation: 'pending_users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'pending_user_guardians_skater_pending_user_id_fkey';
+            columns: ['skater_pending_user_id'];
+            isOneToOne: false;
+            referencedRelation: 'pending_users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'pending_user_guardians_skater_profile_id_fkey';
+            columns: ['skater_profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'pending_user_guardians_updated_by_fkey';
+            columns: ['updated_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       pending_user_teams: {
         Row: {
           pending_user_id: string;
@@ -745,33 +993,39 @@ export type Database = {
         Row: {
           created_at: string;
           created_by: string | null;
-          email: string;
+          derby_name: string | null;
+          email: string | null;
           first_name: string;
           id: string;
           invited_at: string | null;
           last_name: string;
+          preferred_name: string | null;
           updated_at: string;
           updated_by: string | null;
         };
         Insert: {
           created_at?: string;
           created_by?: string | null;
-          email: string;
+          derby_name?: string | null;
+          email?: string | null;
           first_name: string;
           id?: string;
           invited_at?: string | null;
           last_name: string;
+          preferred_name?: string | null;
           updated_at?: string;
           updated_by?: string | null;
         };
         Update: {
           created_at?: string;
           created_by?: string | null;
-          email?: string;
+          derby_name?: string | null;
+          email?: string | null;
           first_name?: string;
           id?: string;
           invited_at?: string | null;
           last_name?: string;
+          preferred_name?: string | null;
           updated_at?: string;
           updated_by?: string | null;
         };
@@ -1177,6 +1431,64 @@ export type Database = {
           },
         ];
       };
+      training_sessions: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          end_time: string;
+          id: string;
+          location_id: string | null;
+          start_time: string;
+          updated_at: string;
+          updated_by: string | null;
+          weeks: number;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          end_time?: string;
+          id?: string;
+          location_id?: string | null;
+          start_time?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          weeks?: number;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          end_time?: string;
+          id?: string;
+          location_id?: string | null;
+          start_time?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          weeks?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'training_sessions_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'training_sessions_location_id_fkey';
+            columns: ['location_id'];
+            isOneToOne: false;
+            referencedRelation: 'locations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'training_sessions_updated_by_fkey';
+            columns: ['updated_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1209,7 +1521,7 @@ export type Database = {
       attendance_status: 'present' | 'partial' | 'absent' | 'excused';
       drill_type: 'jamming' | 'blocking' | 'endurance' | 'offense';
       event_status: 'scheduled' | 'cancelled';
-      event_type: 'game' | 'practice' | 'scrimmage' | 'other';
+      event_type: 'game' | 'practice' | 'scrimmage' | 'other' | 'holiday';
       notification_channel: 'push' | 'email';
       notification_status: 'sent' | 'failed';
       notification_type:
@@ -1342,7 +1654,7 @@ export const Constants = {
       attendance_status: ['present', 'partial', 'absent', 'excused'],
       drill_type: ['jamming', 'blocking', 'endurance', 'offense'],
       event_status: ['scheduled', 'cancelled'],
-      event_type: ['game', 'practice', 'scrimmage', 'other'],
+      event_type: ['game', 'practice', 'scrimmage', 'other', 'holiday'],
       notification_channel: ['push', 'email'],
       notification_status: ['sent', 'failed'],
       notification_type: [

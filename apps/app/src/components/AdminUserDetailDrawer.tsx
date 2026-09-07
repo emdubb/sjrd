@@ -116,7 +116,7 @@ export function AdminUserDetailDrawer({ user, onClose, onChanged }: Props) {
       ) : (
         <AdminUserAssignmentForm
           name={user.name}
-          email={user.email}
+          email={user.email || 'No email on file'}
           userTypes={userTypes}
           onToggleUserType={toggleUserType}
           teams={teams}

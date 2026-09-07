@@ -448,7 +448,7 @@ export default function ProfilePage() {
               mb: 0.5,
             }}
           >
-            {profile.firstName} {profile.lastName}
+            {profile.displayName}
           </Typography>
 
           {mode === 'view' ? (

@@ -21,13 +21,10 @@ export default function Home() {
         size="large"
         eyebrow="Sacramento Junior Roller Derby"
         title="A place for youth athletes to skate, learn, and lead."
-        description="The Beastie Bears are Sacramento Roller Derby's junior program — open gender, ages 8-17, and built on a clear path from first strides to competitive play."
+        description="The Beastie Bears are Sacramento Junior Roller Derby's youth program — open gender, ages 8-17, and built on a clear path from first strides to competitive play."
       >
         <div className="cta-row">
           <Button href="/join">Join Now</Button>
-          <Button href="/events" variant="outline">
-            See Practice Schedule
-          </Button>
         </div>
       </Hero>
 

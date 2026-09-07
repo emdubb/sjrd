@@ -78,12 +78,10 @@ export function SkaterDetailDrawer({ skaterId, onClose }: Props) {
                 fontSize: '1.4rem',
                 lineHeight: 1.15,
                 mt: 0.25,
+                mb: 1,
               }}
             >
               {detail.name}
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#6B7A8D', mb: 1.5 }}>
-              {detail.preferredName || detail.firstName} {detail.lastName}
             </Typography>
 
             <DetailRow
@@ -109,7 +107,7 @@ export function SkaterDetailDrawer({ skaterId, onClose }: Props) {
                   <DetailRow
                     key={i}
                     icon={<PersonOutlineIcon sx={{ fontSize: 18 }} />}
-                    text={`${guardian.name} ${guardian.lastName} · ${guardian.phone ?? 'No phone on file'}`}
+                    text={`${guardian.name} · ${guardian.phone ?? 'No phone on file'}`}
                   />
                 ))}
               </Box>

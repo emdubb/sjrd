@@ -2,10 +2,14 @@ import { useState, useEffect } from 'react';
 import { Dialog, Box, TextField, Button, useTheme, useMediaQuery } from '@mui/material';
 import { EventDrawerHeader } from './EventDrawerHeader';
 import { UserAssignmentFields } from './UserAssignmentFields';
+import { GuardianSkatersField } from './GuardianSkatersField';
 import { BRAND } from '../lib/brand';
 import { fetchTeams } from '../lib/events';
 import { addPendingUser } from '../lib/adminUsers';
-import type { UserType } from '../lib/userTypes';
+import type { SkaterAttachment } from '../lib/guardianSkaters';
+import { USER_TYPE_ORDER, type UserType } from '../lib/userTypes';
+
+const ADD_USER_TYPE_OPTIONS = USER_TYPE_ORDER.filter((type) => type !== 'skater');
 
 interface Props {
   open: boolean;
@@ -20,9 +24,11 @@ export function AddUserDialog({ open, onClose, onAdded }: Props) {
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [preferredName, setPreferredName] = useState('');
+  const [derbyName, setDerbyName] = useState('');
   const [email, setEmail] = useState('');
   const [userTypes, setUserTypes] = useState<UserType[]>([]);
-  const [teamIds, setTeamIds] = useState<string[]>([]);
+  const [skaters, setSkaters] = useState<SkaterAttachment[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -36,21 +42,21 @@ export function AddUserDialog({ open, onClose, onAdded }: Props) {
     if (!open) return;
     setFirstName('');
     setLastName('');
+    setPreferredName('');
+    setDerbyName('');
     setEmail('');
     setUserTypes([]);
-    setTeamIds([]);
+    setSkaters([]);
   }, [open]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const toggleUserType = (type: UserType) =>
-    setUserTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
-    );
-
-  const toggleTeam = (teamId: string) =>
-    setTeamIds((prev) =>
-      prev.includes(teamId) ? prev.filter((t) => t !== teamId) : [...prev, teamId]
-    );
+  const toggleUserType = (type: UserType) => {
+    const next = userTypes.includes(type)
+      ? userTypes.filter((t) => t !== type)
+      : [...userTypes, type];
+    if (type === 'guardian' && !next.includes('guardian')) setSkaters([]);
+    setUserTypes(next);
+  };
 
   const canSave = !!firstName.trim() && !!lastName.trim() && !!email.trim();
 
@@ -62,8 +68,11 @@ export function AddUserDialog({ open, onClose, onAdded }: Props) {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: email.trim(),
+        preferredName: preferredName.trim() || undefined,
+        derbyName: derbyName.trim() || undefined,
         userTypes,
-        teamIds,
+        teamIds: [],
+        skaters,
       });
       onAdded();
     } finally {
@@ -107,12 +116,28 @@ export function AddUserDialog({ open, onClose, onAdded }: Props) {
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
           variant="outlined"
+          required
           fullWidth
         />
         <TextField
           label="Last Name"
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
+          variant="outlined"
+          required
+          fullWidth
+        />
+        <TextField
+          label="Preferred Name"
+          value={preferredName}
+          onChange={(e) => setPreferredName(e.target.value)}
+          variant="outlined"
+          fullWidth
+        />
+        <TextField
+          label="Derby Name"
+          value={derbyName}
+          onChange={(e) => setDerbyName(e.target.value)}
           variant="outlined"
           fullWidth
         />
@@ -122,16 +147,20 @@ export function AddUserDialog({ open, onClose, onAdded }: Props) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           variant="outlined"
+          required
           fullWidth
         />
 
         <UserAssignmentFields
           userTypes={userTypes}
           onToggleUserType={toggleUserType}
-          teams={teams}
-          teamIds={teamIds}
-          onToggleTeam={toggleTeam}
+          userTypeOptions={ADD_USER_TYPE_OPTIONS}
+          showTeams={false}
         />
+
+        {userTypes.includes('guardian') && (
+          <GuardianSkatersField skaters={skaters} onChange={setSkaters} teams={teams} />
+        )}
       </Box>
 
       <Box

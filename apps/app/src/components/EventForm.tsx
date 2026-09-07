@@ -21,7 +21,7 @@ import dayjs, { type Dayjs } from 'dayjs';
 import { BRAND, pillChipSx } from '../lib/brand';
 import { type AppEvent, fetchTeams, DEFAULT_LOCATION, type EventFormData } from '../lib/events';
 
-const TYPES = ['Practice', 'Game', 'Scrimmage', 'Other'];
+const TYPES = ['Practice', 'Game', 'Scrimmage', 'Other', 'Holiday'];
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const ORDINALS = ['first', 'second', 'third', 'fourth', 'fifth'];
 
@@ -62,6 +62,7 @@ export function EventForm({
 
   const [title, setTitle] = useState('');
   const [date, setDate] = useState<Dayjs | null>(defaultDate ? dayjs(defaultDate) : null);
+  const [endDate, setEndDate] = useState<Dayjs | null>(defaultDate ? dayjs(defaultDate) : null);
   const [startTime, setStartTime] = useState<Dayjs | null>(null);
   const [endTime, setEndTime] = useState<Dayjs | null>(null);
   const [recurrence, setRecurrence] = useState('none');
@@ -87,6 +88,9 @@ export function EventForm({
       const m = String(editEvent.month + 1).padStart(2, '0');
       const d = String(editEvent.day).padStart(2, '0');
       setDate(dayjs(`${editEvent.year}-${m}-${d}`));
+      setEndDate(
+        editEvent.dateEnd ? dayjs(editEvent.dateEnd) : dayjs(`${editEvent.year}-${m}-${d}`)
+      );
       setStartTime(editEvent.startTimeRaw ? dayjs(`2000-01-01T${editEvent.startTimeRaw}`) : null);
       setEndTime(editEvent.endTimeRaw ? dayjs(`2000-01-01T${editEvent.endTimeRaw}`) : null);
       setRecurrence(editEvent.recurrence ?? 'none');
@@ -99,6 +103,7 @@ export function EventForm({
     } else {
       setTitle('');
       setDate(defaultDate ? dayjs(defaultDate) : null);
+      setEndDate(defaultDate ? dayjs(defaultDate) : null);
       setStartTime(null);
       setEndTime(null);
       setRecurrence('none');
@@ -134,7 +139,11 @@ export function EventForm({
     };
   }, [date]);
 
-  const canSave = !!title && date?.isValid() && startTime?.isValid() && endTime?.isValid();
+  const isHoliday = eventType === 'Holiday';
+
+  const canSave = isHoliday
+    ? !!title && date?.isValid() && endDate?.isValid() && !endDate.isBefore(date, 'day')
+    : !!title && date?.isValid() && startTime?.isValid() && endTime?.isValid();
 
   const handleSave = async () => {
     if (!canSave) return;
@@ -143,15 +152,16 @@ export function EventForm({
       await onSave({
         title,
         date: date!.format('YYYY-MM-DD'),
-        startTime: startTime!.format('HH:mm'),
-        endTime: endTime!.format('HH:mm'),
-        recurrence,
+        dateEnd: isHoliday ? endDate!.format('YYYY-MM-DD') : '',
+        startTime: isHoliday ? '00:00' : startTime!.format('HH:mm'),
+        endTime: isHoliday ? '23:59' : endTime!.format('HH:mm'),
+        recurrence: isHoliday ? 'none' : recurrence,
         monthlyMode,
         recurrenceEndDate: recurrenceEndDate?.isValid()
           ? recurrenceEndDate.format('YYYY-MM-DD')
           : '',
         eventType,
-        teamIds: selectedTeamIds,
+        teamIds: isHoliday ? [] : selectedTeamIds,
         description,
       });
       onSaved();
@@ -188,70 +198,85 @@ export function EventForm({
           />
 
           <DatePicker
-            label="Date"
+            label={isHoliday ? 'Start Date' : 'Date'}
             value={date}
             onChange={(val) => {
               setDate(val);
               setMonthlyMode('date');
+              if (val && endDate?.isBefore(val, 'day')) setEndDate(val);
             }}
             slotProps={pickerSlotProps}
           />
 
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
-            <TimePicker
-              label="Start time"
-              value={startTime}
-              onChange={setStartTime}
+          {isHoliday && (
+            <DatePicker
+              label="End Date"
+              value={endDate}
+              onChange={setEndDate}
+              minDate={date ?? undefined}
               slotProps={pickerSlotProps}
             />
-            <TimePicker
-              label="End time"
-              value={endTime}
-              onChange={setEndTime}
-              slotProps={pickerSlotProps}
-            />
-          </Box>
+          )}
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-            <FormControl variant="outlined" fullWidth>
-              <InputLabel>Recurrence</InputLabel>
-              <Select
-                value={recurrence}
-                onChange={(e) => {
-                  setRecurrence(e.target.value);
-                  setMonthlyMode('date');
-                }}
-                label="Recurrence"
-              >
-                <MenuItem value="none">Does not repeat</MenuItem>
-                <MenuItem value="daily">Daily</MenuItem>
-                <MenuItem value="weekly">Weekly</MenuItem>
-                <MenuItem value="monthly">Monthly</MenuItem>
-              </Select>
-            </FormControl>
-            {recurrence === 'monthly' && (
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', pl: 0.5 }}>
-                <Chip
-                  label={monthlyDateLabel}
-                  onClick={() => setMonthlyMode('date')}
-                  sx={pillChipSx(monthlyMode === 'date')}
-                />
-                <Chip
-                  label={monthlyWeekdayLabel}
-                  onClick={() => setMonthlyMode('weekday')}
-                  sx={pillChipSx(monthlyMode === 'weekday')}
-                />
-              </Box>
-            )}
-            {recurrence !== 'none' && (
-              <DatePicker
-                label="End date (optional)"
-                value={recurrenceEndDate}
-                onChange={setRecurrenceEndDate}
+          {!isHoliday && (
+            <Box sx={{ display: 'flex', gap: 1.5 }}>
+              <TimePicker
+                label="Start time"
+                value={startTime}
+                onChange={setStartTime}
                 slotProps={pickerSlotProps}
               />
-            )}
-          </Box>
+              <TimePicker
+                label="End time"
+                value={endTime}
+                onChange={setEndTime}
+                slotProps={pickerSlotProps}
+              />
+            </Box>
+          )}
+
+          {!isHoliday && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+              <FormControl variant="outlined" fullWidth>
+                <InputLabel>Recurrence</InputLabel>
+                <Select
+                  value={recurrence}
+                  onChange={(e) => {
+                    setRecurrence(e.target.value);
+                    setMonthlyMode('date');
+                  }}
+                  label="Recurrence"
+                >
+                  <MenuItem value="none">Does not repeat</MenuItem>
+                  <MenuItem value="daily">Daily</MenuItem>
+                  <MenuItem value="weekly">Weekly</MenuItem>
+                  <MenuItem value="monthly">Monthly</MenuItem>
+                </Select>
+              </FormControl>
+              {recurrence === 'monthly' && (
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', pl: 0.5 }}>
+                  <Chip
+                    label={monthlyDateLabel}
+                    onClick={() => setMonthlyMode('date')}
+                    sx={pillChipSx(monthlyMode === 'date')}
+                  />
+                  <Chip
+                    label={monthlyWeekdayLabel}
+                    onClick={() => setMonthlyMode('weekday')}
+                    sx={pillChipSx(monthlyMode === 'weekday')}
+                  />
+                </Box>
+              )}
+              {recurrence !== 'none' && (
+                <DatePicker
+                  label="End date (optional)"
+                  value={recurrenceEndDate}
+                  onChange={setRecurrenceEndDate}
+                  slotProps={pickerSlotProps}
+                />
+              )}
+            </Box>
+          )}
 
           <Box>
             <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: BRAND.navy, mb: 1 }}>
@@ -269,7 +294,7 @@ export function EventForm({
             </Box>
           </Box>
 
-          {availableTeams.length > 0 && (
+          {!isHoliday && availableTeams.length > 0 && (
             <Box>
               <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: BRAND.navy, mb: 1 }}>
                 Team(s)
@@ -287,21 +312,23 @@ export function EventForm({
             </Box>
           )}
 
-          <TextField
-            label="Location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            variant="outlined"
-            fullWidth
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LocationOnIcon sx={{ fontSize: 18, color: '#9AABBD' }} />
-                </InputAdornment>
-              ),
-            }}
-            InputLabelProps={{ shrink: true }}
-          />
+          {!isHoliday && (
+            <TextField
+              label="Location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              variant="outlined"
+              fullWidth
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LocationOnIcon sx={{ fontSize: 18, color: '#9AABBD' }} />
+                  </InputAdornment>
+                ),
+              }}
+              InputLabelProps={{ shrink: true }}
+            />
+          )}
 
           <TextField
             placeholder="Description (optional)"

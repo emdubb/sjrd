@@ -7,17 +7,22 @@ interface EventCardProps {
 export default function EventCard({ title, dateLabel, description }: EventCardProps) {
   return (
     <article className="card">
-      <p className="placeholder-flag">Placeholder</p>
-      <p className="date">{dateLabel}</p>
-      <h3 className="title">{title}</h3>
-      <p className="description">{description}</p>
+      <p className="tag">Placeholder</p>
+      <div className="card-body">
+        <p className="date">{dateLabel}</p>
+        <h3 className="title">{title}</h3>
+        <p className="description">{description}</p>
+      </div>
 
       <style jsx>{`
         .card {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
           background: #ffffff;
           color: #0b233f;
           border-radius: 16px;
-          padding: 1.5rem;
+          overflow: hidden;
           text-align: left;
           border: 1px dashed rgba(11, 35, 63, 0.3);
           box-shadow: 0 10px 24px rgba(11, 35, 63, 0.08);
@@ -29,17 +34,26 @@ export default function EventCard({ title, dateLabel, description }: EventCardPr
           box-shadow: 0 18px 32px rgba(11, 35, 63, 0.16);
         }
 
-        .placeholder-flag {
-          display: inline-block;
-          margin: 0 0 0.75rem;
-          padding: 0.2rem 0.6rem;
-          background: rgba(11, 35, 63, 0.06);
-          border-radius: 999px;
+        .tag {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 2.75rem;
+          margin: 0;
+          padding: 0.4rem 1rem;
+          background: #0b233f;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
           font-size: 0.875rem;
           font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          color: rgba(11, 35, 63, 0.65);
+          color: #ffffff;
+          text-align: center;
+          line-height: 1.3;
+        }
+
+        .card-body {
+          flex: 1;
+          padding: 1.5rem;
         }
 
         .date {
@@ -48,7 +62,7 @@ export default function EventCard({ title, dateLabel, description }: EventCardPr
           letter-spacing: 0.08em;
           font-size: 0.875rem;
           font-weight: 700;
-          color: #0b233f;
+          color: rgba(11, 35, 63, 0.65);
         }
 
         .title {

@@ -8,6 +8,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import NotesIcon from '@mui/icons-material/Notes';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { EventDrawerHeader } from './EventDrawerHeader';
 import { ColoredTag } from './ColoredTag';
 import { DetailRow } from './DetailRow';
@@ -16,6 +17,7 @@ import { PracticeDrillRow } from './PracticeDrillRow';
 import { DrillPickerDialog } from './DrillPickerDialog';
 import { PracticeModeView } from './PracticeModeView';
 import { PracticeAttendanceModal } from './PracticeAttendanceModal';
+import { PracticeCurriculumSection } from './PracticeCurriculumSection';
 import { BRAND } from '../lib/brand';
 import { setEventCoaches, type PracticeEvent, type CoachOption } from '../lib/practice';
 import {
@@ -25,6 +27,8 @@ import {
   swapPracticeDrillPositions,
   type PracticeDrill,
 } from '../lib/practicePlan';
+import { syncEventCurriculum, type EventCurriculum } from '../lib/curriculum';
+import type { Drill } from '../lib/drills';
 
 interface Props {
   event: PracticeEvent | null;
@@ -40,6 +44,7 @@ export function PracticeDetailDrawer({ event, coaches, onClose, onEventUpdated }
   const [pickerOpen, setPickerOpen] = useState(false);
   const [practiceModeOpen, setPracticeModeOpen] = useState(false);
   const [attendanceOpen, setAttendanceOpen] = useState(false);
+  const [curriculum, setCurriculum] = useState<EventCurriculum | null>(null);
 
   const loadDrills = useCallback((eventId: string) => {
     fetchPracticeDrills(eventId)
@@ -55,7 +60,16 @@ export function PracticeDetailDrawer({ event, coaches, onClose, onEventUpdated }
     setAttendanceOpen(false);
     setCoachId(event.coachId);
     setAssistantIds(event.assistantIds);
+    setCurriculum(null);
     loadDrills(event.id);
+    if (event.trainingSessionId && event.sessionWeekNumber !== null) {
+      syncEventCurriculum(event.id, event.sessionWeekNumber)
+        .then((synced) => {
+          setCurriculum(synced);
+          if (synced) loadDrills(event.id);
+        })
+        .catch(() => {});
+    }
   }, [event, loadDrills]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -76,9 +90,9 @@ export function PracticeDetailDrawer({ event, coaches, onClose, onEventUpdated }
     onEventUpdated();
   };
 
-  const handleAddDrill = async (drillId: string) => {
+  const handleAddDrill = async (drill: Drill) => {
     const nextPosition = drills.length > 0 ? Math.max(...drills.map((d) => d.position)) + 1 : 0;
-    await addPracticeDrill(event.id, drillId, nextPosition);
+    await addPracticeDrill(event.id, drill.id, nextPosition);
     loadDrills(event.id);
   };
 
@@ -179,6 +193,9 @@ export function PracticeDetailDrawer({ event, coaches, onClose, onEventUpdated }
             text={`${event.fullDateLabel} · ${event.time}`}
           />
           <DetailRow icon={<GroupIcon sx={{ fontSize: 18 }} />} text={event.team} />
+          {event.location && (
+            <DetailRow icon={<LocationOnIcon sx={{ fontSize: 18 }} />} text={event.location} />
+          )}
           {event.description && (
             <DetailRow icon={<NotesIcon sx={{ fontSize: 18 }} />} text={event.description} />
           )}
@@ -203,6 +220,8 @@ export function PracticeDetailDrawer({ event, coaches, onClose, onEventUpdated }
             onChange={handleAssistantsChange}
           />
         </Box>
+
+        {curriculum && <PracticeCurriculumSection curriculum={curriculum} />}
 
         <Divider sx={{ my: 1.5 }} />
 

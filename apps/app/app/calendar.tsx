@@ -1,15 +1,6 @@
 /* eslint-disable max-lines -- TODO: extract DayCells, EventCard, and event list into separate files */
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import {
-  Box,
-  Typography,
-  IconButton,
-  Fab,
-  Divider,
-  Button,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
+import { Box, Typography, IconButton, Fab, Divider, useTheme, useMediaQuery } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import AddIcon from '@mui/icons-material/Add';
@@ -18,17 +9,17 @@ import { EventCard } from '../src/components/EventCard';
 import { EventTypeFilterBar } from '../src/components/EventTypeFilterBar';
 import { NewEventDrawer } from '../src/components/NewEventDrawer';
 import { EventDrawer } from '../src/components/EventDrawer';
+import { HolidayConflictDialog } from '../src/components/HolidayConflictDialog';
 import { BRAND, MONTH_NAMES } from '../src/lib/brand';
+import { useHolidayCalendar } from '../src/lib/useHolidayCalendar';
 import {
   fetchEventsForMonth,
-  createEvent,
   updateEvent,
   deleteEvent,
   cancelEvent,
   CANCELLED_COLOR,
   type AppEvent,
   type EventFormData,
-  type PagedEvents,
 } from '../src/lib/events';
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -41,6 +32,7 @@ interface DayCellsProps {
   daysInMonth: number;
   selectedDay: number | null;
   eventDayColors: Map<number, string[]>;
+  holidayDays: Set<number>;
   isToday: (day: number) => boolean;
   onDayClick: (day: number) => void;
 }
@@ -52,6 +44,7 @@ function DayCells({
   daysInMonth,
   selectedDay,
   eventDayColors,
+  holidayDays,
   isToday,
   onDayClick,
 }: DayCellsProps) {
@@ -70,6 +63,7 @@ function DayCells({
         const colors = valid ? (eventDayColors.get(day) ?? []) : [];
         const todayCell = valid && isToday(day);
         const selected = valid && day === selectedDay;
+        const holiday = valid && holidayDays.has(day);
 
         return (
           <Box
@@ -84,9 +78,25 @@ function DayCells({
               borderRadius: { xs: 1.5, md: 2 },
               cursor: valid ? 'pointer' : 'default',
               border: valid ? '1px solid #E0E6ED' : 'none',
-              bgcolor: selected ? BRAND.navy : todayCell ? BRAND.notifBg : 'transparent',
+              bgcolor: selected
+                ? BRAND.navy
+                : holiday
+                  ? BRAND.holidayBlue
+                  : todayCell
+                    ? BRAND.todayBg
+                    : 'transparent',
               transition: 'background-color 0.1s',
-              '&:hover': valid ? { bgcolor: selected ? BRAND.navy : '#F5F7FA' } : {},
+              '&:hover': valid
+                ? {
+                    bgcolor: selected
+                      ? BRAND.navy
+                      : holiday
+                        ? '#A9D5F0'
+                        : todayCell
+                          ? 'rgba(242, 191, 53, 0.3)'
+                          : '#F5F7FA',
+                  }
+                : {},
               gap: 0.5,
             }}
           >
@@ -95,8 +105,8 @@ function DayCells({
                 <Typography
                   sx={{
                     fontSize: { xs: '0.82rem', md: '0.9rem' },
-                    fontWeight: todayCell || selected ? 700 : 400,
-                    color: selected ? '#fff' : todayCell ? BRAND.navy : '#333',
+                    fontWeight: todayCell || selected || holiday ? 700 : 400,
+                    color: selected ? '#fff' : todayCell || holiday ? BRAND.navy : '#333',
                     lineHeight: 1,
                   }}
                 >
@@ -145,8 +155,6 @@ export default function CalendarPage() {
   const [viewYear, setViewYear] = useState(TODAY.getFullYear());
   const [viewMonth, setViewMonth] = useState(TODAY.getMonth());
   const [events, setEvents] = useState<AppEvent[]>([]);
-  const [eventOffset, setEventOffset] = useState(0);
-  const [hasMoreEvents, setHasMoreEvents] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [newEventOpen, setNewEventOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<AppEvent | null>(null);
@@ -157,37 +165,32 @@ export default function CalendarPage() {
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
 
-  const loadEvents = useCallback(
-    async (offset = 0, append = false) => {
-      try {
-        const { events: newEvents, hasMore }: PagedEvents = await fetchEventsForMonth(
-          viewYear,
-          viewMonth,
-          offset
-        );
-        setEvents((prev) => (append ? [...prev, ...newEvents] : newEvents));
-        setEventOffset(offset + newEvents.length);
-        setHasMoreEvents(hasMore);
-      } catch {
-        // silently ignore — empty calendar is better than a crash
-      }
-    },
-    [viewYear, viewMonth]
-  );
+  const loadEvents = useCallback(async () => {
+    try {
+      setEvents(await fetchEventsForMonth(viewYear, viewMonth));
+    } catch {
+      // silently ignore — empty calendar is better than a crash
+    }
+  }, [viewYear, viewMonth]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    setEventOffset(0);
-    loadEvents(0, false);
+    loadEvents();
   }, [loadEvents]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
-  const handleSave = async (data: EventFormData) => {
-    await createEvent(data);
-    await loadEvents(0, false);
-  };
+  const {
+    holidayDays,
+    conflictEvents,
+    saving: holidaySaving,
+    saveEvent: handleSave,
+    confirmConflicts: handleConflictConfirm,
+    cancelConflicts: handleConflictCancel,
+  } = useHolidayCalendar(viewYear, viewMonth, loadEvents);
 
   const handleUpdate = async (id: string, data: EventFormData) => {
     await updateEvent(id, data);
-    await loadEvents(0, false);
+    await loadEvents();
   };
 
   const handleDelete = async (id: string) => {
@@ -316,14 +319,6 @@ export default function CalendarPage() {
           ))
         )}
       </Box>
-      {!selectedDay && hasMoreEvents && (
-        <Button
-          onClick={() => loadEvents(eventOffset, true)}
-          sx={{ mt: 1, color: BRAND.navy, textTransform: 'none', fontWeight: 600 }}
-        >
-          Load more
-        </Button>
-      )}
     </>
   );
 
@@ -354,6 +349,7 @@ export default function CalendarPage() {
               daysInMonth={daysInMonth}
               selectedDay={selectedDay}
               eventDayColors={eventDayColors}
+              holidayDays={holidayDays}
               isToday={isToday}
               onDayClick={handleDayClick}
             />
@@ -375,6 +371,7 @@ export default function CalendarPage() {
               daysInMonth={daysInMonth}
               selectedDay={selectedDay}
               eventDayColors={eventDayColors}
+              holidayDays={holidayDays}
               isToday={isToday}
               onDayClick={handleDayClick}
             />
@@ -421,6 +418,14 @@ export default function CalendarPage() {
         onSave={(data) => handleUpdate(selectedEvent!.id, data)}
         onDelete={() => selectedEvent && handleDelete(selectedEvent.id)}
         onCancelEvent={() => selectedEvent && handleCancelEvent(selectedEvent.id)}
+      />
+
+      {/* Existing-event conflicts when adding a multi-day holiday */}
+      <HolidayConflictDialog
+        conflicts={conflictEvents}
+        saving={holidaySaving}
+        onCancel={handleConflictCancel}
+        onConfirm={handleConflictConfirm}
       />
     </Box>
   );

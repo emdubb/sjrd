@@ -42,7 +42,7 @@ export function AdminUserRow({ user, onOpen }: Props) {
           </Typography>
           {isDesktop ? (
             <Typography variant="body2" sx={{ color: '#6B7A8D', mt: 0.25 }}>
-              {user.email}
+              {user.email || 'No email on file'}
             </Typography>
           ) : (
             <Typography variant="body2" sx={{ color: '#6B7A8D', mt: 0.25 }}>

@@ -2,7 +2,7 @@ import Hero from '../src/components/Hero';
 import Section from '../src/components/Section';
 import TeamCard from '../src/components/TeamCard';
 import PathwaySteps from '../src/components/PathwaySteps';
-import { TEAMS, PATHWAY_STEPS } from '../src/lib/programContent';
+import { TRAINING_TEAMS, COMPETITIVE_TEAMS, PATHWAY_STEPS } from '../src/lib/programContent';
 
 export default function Teams() {
   return (
@@ -14,10 +14,22 @@ export default function Teams() {
       />
 
       <Section tone="tint">
-        <div className="grid">
-          {TEAMS.map((team) => (
-            <TeamCard key={team.name} {...team} />
-          ))}
+        <div className="group">
+          <h2 className="group-title">Training Program</h2>
+          <div className="grid">
+            {TRAINING_TEAMS.map((team) => (
+              <TeamCard key={team.name} {...team} />
+            ))}
+          </div>
+        </div>
+
+        <div className="group">
+          <h2 className="group-title">Our Teams</h2>
+          <div className="grid">
+            {COMPETITIVE_TEAMS.map((team) => (
+              <TeamCard key={team.name} {...team} />
+            ))}
+          </div>
         </div>
       </Section>
 
@@ -27,6 +39,21 @@ export default function Teams() {
       </Section>
 
       <style jsx>{`
+        .group {
+          max-width: 800px;
+          margin: 0 auto;
+        }
+
+        .group + .group {
+          margin-top: 3.5rem;
+        }
+
+        .group-title {
+          font-size: 1.5rem;
+          margin: 0 0 1.5rem;
+          text-align: center;
+        }
+
         .grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

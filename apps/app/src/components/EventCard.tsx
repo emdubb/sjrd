@@ -1,5 +1,5 @@
 import { Card, CardContent, Typography, Box } from '@mui/material';
-import { BRAND, formatEventDate } from '../lib/brand';
+import { BRAND, formatEventDateRange } from '../lib/brand';
 import { getAccentColor, type AppEvent } from '../lib/events';
 import { EventTypeLabel } from './EventTypeLabel';
 
@@ -43,7 +43,9 @@ export function EventCard({ event, onClick }: Props) {
           {event.title}
         </Typography>
         <Typography variant="body2" sx={{ color: '#6B7A8D', fontSize: '0.78rem' }}>
-          {formatEventDate(event)} · {event.time}
+          {event.type === 'Holiday'
+            ? formatEventDateRange(event)
+            : `${formatEventDateRange(event)} · ${event.time}`}
         </Typography>
         <Typography
           sx={{

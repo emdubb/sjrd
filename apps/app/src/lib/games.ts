@@ -1,7 +1,12 @@
 import { supabase } from '@sjrd/api-client';
 import { MONTH_NAMES } from './brand';
 import { formatTime } from './events';
-import { shortName, type ProfileRow, type ScheduleScope, type PracticeFilters } from './practice';
+import {
+  formatDisplayName,
+  type ProfileRow,
+  type ScheduleScope,
+  type PracticeFilters,
+} from './practice';
 
 export interface GameEvent {
   id: string;
@@ -58,9 +63,9 @@ function rowToGameEvent(row: GameRow): GameEvent {
     team,
     teamIds,
     coachId: primaryCoach ? primaryCoach.profile_id : null,
-    coachName: primaryCoach ? shortName(primaryCoach.profiles) : null,
+    coachName: primaryCoach ? formatDisplayName(primaryCoach.profiles) : null,
     assistantIds: assistantCoaches.map((c) => c.profile_id),
-    assistantNames: assistantCoaches.map((c) => shortName(c.profiles)),
+    assistantNames: assistantCoaches.map((c) => formatDisplayName(c.profiles)),
     hasCoach: !!primaryCoach,
   };
 }
@@ -68,7 +73,7 @@ function rowToGameEvent(row: GameRow): GameEvent {
 const gameSelect = (teamId: string | null) => `
   id, title, description, date_start, start_time, end_time,
   event_teams${teamId ? '!inner' : ''}(team_id, teams(id, name)),
-  event_coaches(profile_id, is_primary, profiles!event_coaches_profile_id_fkey(first_name, preferred_name, derby_name))
+  event_coaches(profile_id, is_primary, profiles!event_coaches_profile_id_fkey(first_name, last_name, preferred_name, derby_name))
 `;
 
 const PAGE_SIZE = 15;
@@ -141,6 +146,7 @@ export interface RosterSkater {
 type SkaterProfileRow = {
   id: string;
   first_name: string;
+  last_name: string;
   preferred_name: string | null;
   derby_name: string | null;
 };
@@ -172,7 +178,7 @@ function mockEligible(skaterId: string): boolean {
 function rowToRosterSkater(row: SkaterProfileRow): RosterSkater {
   return {
     id: row.id,
-    name: shortName(row),
+    name: formatDisplayName(row),
     availability: mockAvailability(row.id),
     eligible: mockEligible(row.id),
   };
@@ -185,7 +191,9 @@ function sortByName(skaters: RosterSkater[]): RosterSkater[] {
 export async function fetchTeamSkaters(teamId: string): Promise<RosterSkater[]> {
   const { data, error } = await supabase
     .from('team_members')
-    .select('profiles!team_members_profile_id_fkey(id, first_name, preferred_name, derby_name)')
+    .select(
+      'profiles!team_members_profile_id_fkey(id, first_name, last_name, preferred_name, derby_name)'
+    )
     .eq('team_id', teamId);
   if (error) throw error;
   const rows = (data ?? []) as unknown as { profiles: SkaterProfileRow | null }[];
@@ -198,7 +206,7 @@ export async function fetchAllSkaters(): Promise<RosterSkater[]> {
   const { data, error } = await supabase
     .from('profile_user_types')
     .select(
-      'profiles!profile_user_types_profile_id_fkey(id, first_name, preferred_name, derby_name)'
+      'profiles!profile_user_types_profile_id_fkey(id, first_name, last_name, preferred_name, derby_name)'
     )
     .eq('user_type', 'skater');
   if (error) throw error;

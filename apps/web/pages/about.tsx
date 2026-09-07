@@ -24,7 +24,7 @@ export default function About() {
         <p className="section-body">
           We have two teams in our Beastie Bears program. <strong>Sabotage</strong> is our
           charter team, competing in sanctioned JRDA games, tournaments, and post-season play.{' '}
-          <strong>Intergalactic</strong> is our development team, fostering a fun and competitive
+          <strong>Intergalactic</strong> is our recreational team, fostering a fun and competitive
           environment to build the skills skaters need to be ready for higher-level play.
         </p>
       </Section>
@@ -57,7 +57,7 @@ export default function About() {
         </p>
         <div className="grid">
           {COACHES.map((coach) => (
-            <CoachCard key={coach.name} {...coach} />
+            <CoachCard key={coach.displayName} {...coach} />
           ))}
         </div>
       </Section>
